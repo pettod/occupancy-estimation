@@ -1,0 +1,13 @@
+# File types
+*.csv
+*.out*
+*.png
+*.pt
+*.pyc
+*.wav
+*.WAV
+
+# Folders
+.vscode/*
+saved_models/*
+tmp/*
