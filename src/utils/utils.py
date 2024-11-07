@@ -1,6 +1,7 @@
 import cv2
 import os
 import sys
+import random
 import time
 from glob import glob
 from inspect import getmembers, isfunction
