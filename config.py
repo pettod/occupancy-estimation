@@ -5,12 +5,11 @@ import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.transforms import (
-    Compose, CenterCrop, RandomCrop, RandomHorizontalFlip, RandomVerticalFlip,
-    ToTensor, Normalize
+    Compose, ToTensor, Normalize
 )
 
 from src.dataset import ImageDataset as Dataset
-from src.loss_functions import l1, sobelLoss, GANLoss
+from src.loss_functions import l1, GANLoss
 from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
@@ -53,10 +52,10 @@ class CONFIG:
 
     # Cost function
     LOSS_FUNCTIONS = [
-        [l1, sobelLoss],
+        [l1],
     ]
     LOSS_WEIGHTS = [
-        [1, 1],
+        [1],
     ]
 
     # GAN
@@ -81,14 +80,10 @@ class CONFIG:
 
     # Transforms and dataset
     TRAIN_TRANSFORM = Compose([
-        RandomCrop(PATCH_SIZE),
-        RandomHorizontalFlip(),
-        RandomVerticalFlip(),
-        ToTensor(),
+        #ToTensor(),
     ])
     VALID_TRANSFORM = Compose([
-        CenterCrop(PATCH_SIZE),
-        ToTensor(),
+        #ToTensor(),
     ])
     TEST_TRANSFORM = ToTensor()
     INPUT_NORMALIZE = Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
