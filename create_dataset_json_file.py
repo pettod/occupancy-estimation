@@ -49,13 +49,14 @@ def getSamples(folder, sample_length=2.0):
         # Loop CSV file timestamps
         for csv_index, row in csv_info:
             csv_start_timestamp = row["Seconds"]
-            occupancy_time = None
+            occupancy_time = 365*24*3600  # Big initial value
             if csv_index < len(csv_info) - 1:
                 next_row = csv_info[csv_index + 1][1]
                 occupancy_time = next_row["Seconds"] - csv_start_timestamp
+            csv_end_timestamp = csv_start_timestamp + occupancy_time
 
             # Timestamp in audio file
-            if (csv_start_timestamp >= audio_file_start_time and
+            if (csv_end_timestamp >= audio_file_start_time and
                 csv_start_timestamp <= audio_file_end_time - sample_length
             ):
                 
