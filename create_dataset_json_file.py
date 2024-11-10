@@ -61,8 +61,11 @@ def getSamples(folder, sample_length=2.0):
                 
                 occupancy = row["Count"]
                 start_time = max(0.0, csv_start_timestamp - audio_file_start_time)
-                if occupancy_time is None:
-                    occupancy_time = audio_file_length - start_time
+                max_audio_file_occupancy_time = audio_file_length - start_time
+                if (occupancy_time is None or
+                    occupancy_time > max_audio_file_occupancy_time
+                ):
+                    occupancy_time = max_audio_file_occupancy_time
                 occupancy_end_time = occupancy_time + start_time
                 while start_time + sample_length <= occupancy_end_time:
                     end_time = start_time + sample_length
