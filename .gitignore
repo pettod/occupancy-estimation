@@ -8,8 +8,10 @@
 *.WAV
 *.json
 *.zip
+*.DS_Store
 
 # Folders
 .vscode/*
 saved_models/*
 tmp/*
+*.egg-info/*

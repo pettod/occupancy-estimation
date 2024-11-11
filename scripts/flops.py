@@ -1,8 +1,10 @@
 import torch.nn as nn
 from config import CONFIG
+from fvcore.nn import FlopCountAnalysis
+import torch
 
 
-INPUT_SHAPE = (1, 1, 256)
+INPUT_SHAPE = (1, 256, 1921)
 SINGLE_VALUE_OPERATIONS = ["ReLU", "Sigmoid", "Tanh"]
 POOL1D_LAYERS = ["MaxPool1d", "AvgPool1d"]
 CONV1D_LAYERS = ["Conv1d", "ConvTranspose1d"]
@@ -236,6 +238,10 @@ def printFlops(
 def main():
     model = CONFIG.MODELS[0]
     flops(model)
+    input_tensor = torch.randn(INPUT_SHAPE).unsqueeze(1)
+    fvcore_flops = FlopCountAnalysis(model, input_tensor)
+    total_flops = fvcore_flops.total()
+    print(f"{total_flops:,}")
 
 
 if __name__ == "__main__":

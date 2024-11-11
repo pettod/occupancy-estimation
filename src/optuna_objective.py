@@ -5,7 +5,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from config import CONFIG
 from src.trainer import Trainer
 from src.architectures.model import Net
-from flops import flops
+from scripts.flops import flops
 from src.utils.utils import seedEverything
 
 
