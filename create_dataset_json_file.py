@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 DATA_ROOT = "data/0_input"
 SAMPLE_LENGTH = 2.0
-JSON_FILE_NAME = "dataset.json"
+JSON_FILE_NAME = f"dataset_{str(SAMPLE_LENGTH).replace('.', '-')}s.json"
 PRINT_JSON = False
 
 
