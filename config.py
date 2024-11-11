@@ -56,19 +56,6 @@ class CONFIG:
         [1],
     ]
 
-    # GAN
-    USE_GAN = False
-    DISCRIMINATOR = UNetDiscriminatorSN(3)
-    DIS_OPTIMIZER = optim.Adam(DISCRIMINATOR.parameters(), lr=1e-4)
-    DIS_SCHEDULER = ReduceLROnPlateau(DIS_OPTIMIZER, "min", 0.3, 6, min_lr=1e-8)
-    DIS_LOSS = GANLoss("vanilla")
-    DIS_LOSS_WEIGHT = 1
-
-    # Load GAN
-    LOAD_GAN = False
-    DIS_PATH = None
-    LOAD_DIS_OPTIMIZER_STATE = False
-
     # Hyperparameters
     EPOCHS = 1000
     BATCH_SIZE = 16
@@ -87,3 +74,16 @@ class CONFIG:
     DROP_LAST_BATCH = False
     NUMBER_OF_DATALOADER_WORKERS = 0 #cpu_count()
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # GAN
+    USE_GAN = False
+    DISCRIMINATOR = UNetDiscriminatorSN(3)
+    DIS_OPTIMIZER = optim.Adam(DISCRIMINATOR.parameters(), lr=1e-4)
+    DIS_SCHEDULER = ReduceLROnPlateau(DIS_OPTIMIZER, "min", 0.3, 6, min_lr=1e-8)
+    DIS_LOSS = GANLoss("vanilla")
+    DIS_LOSS_WEIGHT = 1
+
+    # Load GAN
+    LOAD_GAN = False
+    DIS_PATH = None
+    LOAD_DIS_OPTIMIZER_STATE = False
