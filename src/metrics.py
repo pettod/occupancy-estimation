@@ -1,11 +1,7 @@
-#from piq import psnr as psnr_
-#from piq import ssim as ssim_
-#
-#
-#def psnr(y_true, y_pred):
-#    return psnr_(y_true, y_pred)
-#
-#
-#def ssim(y_true, y_pred):
-#    return ssim_(y_true, y_pred)
-#
+import torch
+
+
+def accuracy(y_true, y_pred):
+    ratio = torch.min(y_pred, y_true) / torch.max(y_pred, y_true)
+    accuracy = ratio.mean().item()
+    return accuracy
