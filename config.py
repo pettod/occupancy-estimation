@@ -8,21 +8,19 @@ from torchvision.transforms import (
     Compose, ToTensor, Normalize
 )
 
-from src.dataset import ImageDataset as Dataset
+from src.dataset import AudioSpectrogramDataset as Dataset
 from src.loss_functions import l1, GANLoss
 from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
 
-DATA_ROOT = os.path.realpath("data")
+DATA_ROOT = os.path.realpath(".")
 
 
 class CONFIG:
     # Data paths
-    TRAIN_X_DIR = os.path.join(DATA_ROOT, "0_input/")
-    TRAIN_Y_DIR = os.path.join(DATA_ROOT, "1_ground_truth/")
-    VALID_X_DIR = os.path.join(DATA_ROOT, "0_input/")
-    VALID_Y_DIR = os.path.join(DATA_ROOT, "1_ground_truth/")
+    TRAIN_FILE = os.path.join(DATA_ROOT, "dataset_2-0s.json")
+    VALID_FILE = os.path.join(DATA_ROOT, "dataset_2-0s.json")
     TEST_IMAGE_PATHS = [
     ]
 
@@ -79,16 +77,12 @@ class CONFIG:
     ITERATIONS_PER_EPOCH = 10
 
     # Transforms and dataset
-    TRAIN_TRANSFORM = Compose([
-        #ToTensor(),
-    ])
-    VALID_TRANSFORM = Compose([
-        #ToTensor(),
-    ])
+    TRAIN_TRANSFORM = None
+    VALID_TRANSFORM = None
     TEST_TRANSFORM = ToTensor()
     INPUT_NORMALIZE = Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    TRAIN_DATASET = Dataset(TRAIN_X_DIR, TRAIN_Y_DIR, TRAIN_TRANSFORM, INPUT_NORMALIZE)
-    VALID_DATASET = Dataset(VALID_X_DIR, VALID_Y_DIR, VALID_TRANSFORM, INPUT_NORMALIZE)
+    TRAIN_DATASET = Dataset(TRAIN_FILE)
+    VALID_DATASET = Dataset(VALID_FILE)
 
     # General parameters
     DROP_LAST_BATCH = False
