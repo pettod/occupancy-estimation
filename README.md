@@ -5,18 +5,12 @@
 ## Installation
 
 ```bash
-conda install pytorch torchvision
-pip install -r requirements.txt
+conda install pytorch torchaudio
+pip install -e .
 ```
 
 ## Train
 
 ```bash
-python train.py
-```
-
-## Optimize
-
-```bash
-python optimize.py
+python train.py <name_of_the_training>
 ```
