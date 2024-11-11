@@ -9,24 +9,6 @@ import torch
 import matplotlib.pyplot as plt
 
 
-def readAudio(audio_path, transform, seed):
-    samplerate, audio = wavfile.read(audio_path)
-    # TODO: Make spetral image
-    return audio
-
-
-def readAudioPaths(data_path):
-    if data_path is None or type(data_path) == list:
-        return data_path
-    return np.array(sorted(glob(f"{data_path}/*.WAV")))
-
-
-def readCsvPaths(data_path):
-    if data_path is None or type(data_path) == list:
-        return data_path
-    return np.array(sorted(glob(f"{data_path}/*.csv")))
-
-
 def readJson(json_path):
     with open(json_path, "r") as f:
         return json.load(f)

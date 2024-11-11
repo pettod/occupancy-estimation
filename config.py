@@ -72,9 +72,8 @@ class CONFIG:
     # Hyperparameters
     EPOCHS = 1000
     BATCH_SIZE = 16
-    PATCH_SIZE = 256
-    PATIENCE = 30
-    ITERATIONS_PER_EPOCH = 10
+    PATIENCE = 6
+    ITERATIONS_PER_EPOCH = 1
 
     # Transforms and dataset
     TRAIN_TRANSFORM = None
@@ -86,5 +85,5 @@ class CONFIG:
 
     # General parameters
     DROP_LAST_BATCH = False
-    NUMBER_OF_DATALOADER_WORKERS = cpu_count()
+    NUMBER_OF_DATALOADER_WORKERS = 0 #cpu_count()
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
