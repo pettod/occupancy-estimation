@@ -10,7 +10,12 @@ import os
 
 def readJson(json_path):
     with open(json_path, "r") as f:
-        return json.load(f)
+        data = json.load(f)
+    #data = [
+    #    sample for sample in data
+    #    if "data_org/20241104_105000" in sample["audio_file_path"]
+    #]
+    return data
 
 
 def replaceRootPath(original_path, new_root):
