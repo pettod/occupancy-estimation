@@ -5,6 +5,7 @@ import torchaudio.transforms as T
 import json
 import torch
 import matplotlib.pyplot as plt
+import os
 
 
 def readJson(json_path):
@@ -12,12 +13,19 @@ def readJson(json_path):
         return json.load(f)
 
 
+def replaceRootPath(original_path, new_root):
+    path_parts = original_path.split(os.sep)
+    transformed_path = os.path.join(new_root, *path_parts[1:])
+    return transformed_path
+
+
 class AudioSpectrogramDataset(Dataset):
     def __init__(
-            self, dataset_path, transform=None,
+            self, dataset_path, replaced_data_path_root=None, transform=None,
             input_normalize=None, sample_rate=192000, mel_bands=256,
         ):
         self.dataset = readJson(dataset_path)
+        self.replaced_data_path_root = replaced_data_path_root
         self.transform = transform or T.MelSpectrogram(
             sample_rate=sample_rate, n_mels=mel_bands)
         self.input_normalize = input_normalize
@@ -29,6 +37,8 @@ class AudioSpectrogramDataset(Dataset):
     def __getitem__(self, i):
         seed = random.randint(0, 2**32)
         audio_file_path = self.dataset[i]["audio_file_path"]
+        if self.replaced_data_path_root:
+            audio_file_path = replaceRootPath(audio_file_path, self.replaced_data_path_root)
         occupancy = torch.tensor(int(self.dataset[i]["occupancy"]), dtype=torch.float32)
         start_time = self.dataset[i]["start_time"]
         duration = self.dataset[i]["end_time"] - start_time

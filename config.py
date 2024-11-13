@@ -14,13 +14,11 @@ from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
 
-DATA_ROOT = os.path.realpath(".")
-
-
 class CONFIG:
     # Data paths
-    TRAIN_FILE = os.path.join(DATA_ROOT, "dataset_2-0s.json")
-    VALID_FILE = os.path.join(DATA_ROOT, "dataset_2-0s.json")
+    TRAIN_FILE = "dataset_2-0s.json"
+    VALID_FILE = "dataset_2-0s.json"
+    REPLACED_DATA_PATH_ROOT = "data_high-pass"
     TEST_IMAGE_PATHS = [
     ]
 
@@ -67,8 +65,8 @@ class CONFIG:
     VALID_TRANSFORM = None
     TEST_TRANSFORM = ToTensor()
     INPUT_NORMALIZE = Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    TRAIN_DATASET = Dataset(TRAIN_FILE)
-    VALID_DATASET = Dataset(VALID_FILE)
+    TRAIN_DATASET = Dataset(TRAIN_FILE, REPLACED_DATA_PATH_ROOT)
+    VALID_DATASET = Dataset(VALID_FILE, REPLACED_DATA_PATH_ROOT)
 
     # General parameters
     DROP_LAST_BATCH = False
