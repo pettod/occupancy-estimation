@@ -7,7 +7,7 @@ from glob import glob
 from tqdm import tqdm
 
 
-DATA_ROOT = "data/0_input"
+DATA_ROOT = "data_org"
 SAMPLE_LENGTH = 2.0
 JSON_FILE_NAME = f"dataset_{str(SAMPLE_LENGTH).replace('.', '-')}s.json"
 PRINT_JSON = False
@@ -85,11 +85,7 @@ def getSamples(folder, sample_length=2.0):
 
 
 def main():
-    data_folders = [
-        os.path.join(DATA_ROOT, name)
-        for name in os.listdir(DATA_ROOT)
-        if os.path.isdir(os.path.join(DATA_ROOT, name))
-    ]
+    data_folders = glob(os.path.join(DATA_ROOT, "*/*/*/"))
     samples = []
     for data_folder in tqdm(data_folders):
         samples_per_recording_session = getSamples(data_folder, SAMPLE_LENGTH)

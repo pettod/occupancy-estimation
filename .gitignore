@@ -9,6 +9,7 @@
 *.json
 *.zip
 *.DS_Store
+*.pem
 
 # Folders
 .vscode/*
