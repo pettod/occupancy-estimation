@@ -8,7 +8,15 @@ import os
 from tqdm import tqdm
 
 
-INPUT_PATHS = glob("data_org/0_input/20241104_105000_cafe/*.WAV")
+"""Expected data structure
+DATA_DIR
+    Recording
+        Date
+            Recording description
+                WAV files
+"""
+
+DATA_DIR = "data_org"
 CUTOFF_FREQ = 10000
 PLOT = False  # Super slow
 
@@ -77,26 +85,28 @@ def plotWaveformAndFrequency(time, original_data, filtered_data, sample_rate, ti
 def main():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     output_folder = f"{timestamp}_highpass_{CUTOFF_FREQ}"
-    os.makedirs(output_folder, exist_ok=True)
-    for input_path in tqdm(sorted(INPUT_PATHS)):
-        data, sample_rate = sf.read(input_path)
-        input_filename = os.path.basename(input_path)
-        output_filename = f"{output_folder}/{input_filename}"
+    recording_dirs = glob(os.path.join(DATA_DIR, "*/*/*/"))
+    for recording_dir in tqdm(recording_dirs):
+        os.makedirs(os.path.join(output_folder, *recording_dir.split(os.sep)[1:]), exist_ok=True)
+        wav_paths = glob(os.path.join(recording_dir, "*.WAV"))
+        for wav_path in sorted(wav_paths):
+            data, sample_rate = sf.read(wav_path)
+            output_filename = os.path.join(output_folder, *wav_path.split(os.sep)[1:])
 
-        # Mono
-        if data.ndim == 1:  # Mono
-            filtered_data = highpassFilter(data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)  # Example cutoff at 100 Hz
-        # Stereo
-        else:
-            filtered_data = np.apply_along_axis(highpassFilter, 0, data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)
+            # Mono
+            if data.ndim == 1:  # Mono
+                filtered_data = highpassFilter(data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)  # Example cutoff at 100 Hz
+            # Stereo
+            else:
+                filtered_data = np.apply_along_axis(highpassFilter, 0, data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)
 
-        # Create a time axis for plotting (based on the sample rate and number of samples)
-        time = np.arange(data.shape[0]) / sample_rate
+            # Create a time axis for plotting (based on the sample rate and number of samples)
+            time = np.arange(data.shape[0]) / sample_rate
 
-        if PLOT:
-            plotWaveformAndFrequency(time, data, filtered_data, sample_rate, title="High-pass Filter Effect")
-        sf.write(output_filename, filtered_data, sample_rate)
-    print(f"Filtered audio saved in {output_folder}")
+            if PLOT:
+                plotWaveformAndFrequency(time, data, filtered_data, sample_rate, title="High-pass Filter Effect")
+            sf.write(output_filename, filtered_data, sample_rate)
+    print(f"Filtered audio files saved to {output_folder}")
 
 
 main()
