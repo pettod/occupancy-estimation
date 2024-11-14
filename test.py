@@ -1,36 +1,26 @@
-import cv2
 import numpy as np
 import os
-import time
 import torch
-import torch.nn as nn
-from imco import compareImages
 from importlib import import_module
-from torchvision.transforms import Compose, CenterCrop, Normalize, ToTensor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Project files
-from src.dataset import ImageDataset as Dataset
+from src.dataset import AudioSpectrogramDataset as Dataset
 from src.utils.utils import loadModel
 
+
 # Data paths
-DATA_ROOT = os.path.realpath("../input/REDS")
-X_DIR = os.path.join(DATA_ROOT, "valid_blur")
-Y_DIR = os.path.join(DATA_ROOT, "valid_sharp")
+DATA_FILENAME = "dataset_2-0s_valid.json"
+REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
 MODEL_PATHS = [
-    "saved_models/2022-05-20_212932",
-    "saved_models/2022-05-20_212932",
+    "saved_models/2024-11-14_123650_18k_samples",
 ]
-NAMES = [
-    "Input",
-    "model 1",
-    "model 2",
-    "Ground truth",
-]
-PATCH_SIZE = 256
+BATCH_SIZE = 16
 DEVICE = torch.device("cpu")
 
 
@@ -38,45 +28,77 @@ def loadModels():
     models = []
     for model_path in MODEL_PATHS:
         config = import_module(os.path.join(
-            model_path, "codes.config").replace('/', '.')).CONFIG
+            model_path, "codes.config").replace("/", ".")).CONFIG
         model = config.MODELS[0].to(DEVICE)
         loadModel(model, model_path=model_path)
         models.append(model)
     return models
 
 
-def saveImage(save_directory, image, image_name):
-    os.makedirs(save_directory, exist_ok=True)
-    cv2.imwrite(os.path.join(save_directory, image_name), image[..., ::-1])
-
-
-def main():
+def predictResults():
     # Dataset
-    transforms = Compose([
-        CenterCrop(PATCH_SIZE),
-        ToTensor(),
-    ])
-    input_normalize = Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    dataset = Dataset(X_DIR, Y_DIR, transforms, input_normalize)
-    dataloader = DataLoader(dataset, batch_size=4, shuffle=False, num_workers=8)
+    dataset = Dataset(DATA_FILENAME)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
     # Save directory
-    save_directory = os.path.join("predictions", time.strftime("%Y-%m-%d_%H%M%S"))
     with torch.no_grad():
-        models = loadModels()
+        model = loadModels()[0]
+        gt_pred = {}
 
         # Predict and save
         for i, (x, y) in enumerate(tqdm(dataloader)):
             x, y = x.to(DEVICE), y.numpy()
-            predictions = [m(x).cpu().numpy() for m in models]
-            x += 1
-            x /= 2
-            x = x.cpu().numpy()
-            for j in range(x.shape[0]):
-                images = [x[j]] + [p[j] for p in predictions] + [y[j]]
-                images = [(255 * np.moveaxis(img, 0, -1)).astype(np.uint8) for img in images]
-                concat_image = compareImages(images, NAMES, True).astype(np.uint8)
-                saveImage(save_directory, concat_image, f"{i}_{j}.png")
+            predictions = model(x).squeeze(1).cpu().numpy()
+            for gt, pred in zip(y, predictions):
+                gt = gt.astype(int)
+                pred = np.round(pred).astype(int)
+                if gt in gt_pred:
+                    gt_pred[gt].append(pred)
+                else:
+                    gt_pred[gt] = [pred]
+            #if i == 10:
+            #    break
+    return gt_pred
+
+
+def main():
+    results = predictResults()
+
+    # Prepare data for visualization
+    keys = sorted(results.keys())
+    means = []
+    standard_deviations = []
+    min_values = []
+    max_values = []
+
+    # Calculate standard deviation, minimum, and maximum for each list
+    for key, values in results.items():
+        mean = np.mean(values)
+        std_dev = np.std(values)
+        means.append(mean)
+        standard_deviations.append(std_dev)
+        min_values.append(min(values))
+        max_values.append(max(values))
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    for i, key in enumerate(keys):
+        ax.plot([i, i], [means[i] - standard_deviations[i], means[i] + standard_deviations[i]], color="red", linewidth=4, alpha=1.0, label="Standard deviation" if i == 0 else "")
+        ax.plot([i, i], [min_values[i], max_values[i]], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
+        ax.plot(i, max_values[i], "_", color="black", markersize=6)
+        ax.plot(i, min_values[i], "_", color="black", markersize=6)
+        ax.plot(i, means[i], "o", color="green", markersize=6, label="Prediction mean" if i == 0 else "")
+        ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
+
+    # Customize the plot
+    ax.set_xlabel("Occupancy")
+    ax.set_ylabel("Prediction")
+    ax.set_title("Occupancy deviation")
+    plt.xticks(ticks=range(len(keys)), labels=keys)
+    ax.legend()
+    ax.grid(True, linestyle="--", alpha=0.5)
+
+    # Show the plot
+    plt.show()
 
 
 main()
