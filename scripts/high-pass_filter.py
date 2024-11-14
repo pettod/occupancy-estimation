@@ -16,7 +16,7 @@ DATA_DIR
                 WAV files
 """
 
-DATA_DIR = "data_org"
+DATA_DIR = "data_original"
 CUTOFF_FREQ = 10000
 PLOT = False  # Super slow
 

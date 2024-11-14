@@ -10,6 +10,7 @@
 *.zip
 *.DS_Store
 *.pem
+*.xlsx
 
 # Folders
 .vscode/*
