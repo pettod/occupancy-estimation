@@ -5,11 +5,12 @@ import os
 from datetime import datetime
 from glob import glob
 from tqdm import tqdm
+import random
 
 
 DATA_ROOT = "data_org"
 SAMPLE_LENGTH = 2.0
-JSON_FILE_NAME = f"dataset_{str(SAMPLE_LENGTH).replace('.', '-')}s.json"
+TRAIN_VALID_SPLIT = 0.8
 PRINT_JSON = False
 
 
@@ -85,22 +86,35 @@ def getSamples(folder, sample_length=2.0):
 
 
 def main():
+    json_filename = f"dataset_{str(SAMPLE_LENGTH).replace('.', '-')}s"
     data_folders = glob(os.path.join(DATA_ROOT, "*/*/*/"))
-    samples = []
+    train_samples = []
+    valid_samples = []
     for data_folder in tqdm(data_folders):
         samples_per_recording_session = getSamples(data_folder, SAMPLE_LENGTH)
-        samples += samples_per_recording_session
+        for sample in samples_per_recording_session:
+            if random.random() < TRAIN_VALID_SPLIT:
+                train_samples.append(sample)
+            else:
+                valid_samples.append(sample)
     if PRINT_JSON:
-        for sample in samples:
+        for sample in train_samples:
             print("{")
             for key, value in sample.items():
                 print(f"    {key}: {value}")
             print("},")
     else:
-        with open(JSON_FILE_NAME, "w") as json_file:
-            json.dump(samples, json_file, indent=4)
-        print("File saved:", JSON_FILE_NAME)
-    print(len(samples), "samples")
+        json_filename_train = f"{json_filename}_train.json"
+        json_filename_valid = f"{json_filename}_valid.json"
+        with open(json_filename_train, "w") as json_file:
+            json.dump(train_samples, json_file, indent=4)
+        with open(json_filename_valid, "w") as json_file:
+            json.dump(valid_samples, json_file, indent=4)
+        print("File saved:", json_filename_train)
+        print("File saved:", json_filename_valid)
+    print(len(train_samples), "train samples")
+    print(len(valid_samples), "valid samples")
+    print(len(train_samples) + len(valid_samples), "total samples")
 
 
 main()
