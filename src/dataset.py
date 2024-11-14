@@ -13,7 +13,7 @@ def readJson(json_path):
         data = json.load(f)
     #data = [
     #    sample for sample in data
-    #    if "data_org/20241104_105000" in sample["audio_file_path"]
+    #    if "data_original/20241104_105000" in sample["audio_file_path"]
     #]
     return data
 
