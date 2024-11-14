@@ -37,7 +37,7 @@ def loadModels():
 
 def predictResults():
     # Dataset
-    dataset = Dataset(DATA_FILENAME)
+    dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
     # Save directory
