@@ -16,8 +16,8 @@ from src.architectures.model import Net
 
 class CONFIG:
     # Data paths
-    TRAIN_FILE = "dataset_2-0s.json"
-    VALID_FILE = "dataset_2-0s.json"
+    TRAIN_FILE = "dataset_2-0s_train.json"
+    VALID_FILE = "dataset_2-0s_valid.json"
     REPLACED_DATA_PATH_ROOT = "data_high-pass"
     TEST_IMAGE_PATHS = [
     ]
