@@ -1,7 +1,7 @@
 import torch
 
 
-def accuracy(y_true, y_pred):
+def accuracy(y_pred, y_true):
     y_pred = torch.round(y_pred)
     numerator = torch.min(y_pred, y_true)
     denominator = torch.max(y_pred, y_true)
