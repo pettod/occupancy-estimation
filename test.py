@@ -90,9 +90,10 @@ def main():
         ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
 
     # Customize the plot
-    ax.set_xlabel("Occupancy")
-    ax.set_ylabel("Prediction")
-    ax.set_title("Occupancy deviation")
+    ax.set_xlabel("Ground truth occupancy")
+    ax.set_ylabel("Predicted occupancy")
+    ax.set_title("Occupancy prediction stability")
+    ax.set_ylim(0)
     plt.xticks(ticks=range(len(keys)), labels=keys)
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.5)
