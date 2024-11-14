@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 """Expected data structure
 DATA_DIR
-    Recording
+    Recording device name/barcode
         Date
             Recording description
                 WAV files
