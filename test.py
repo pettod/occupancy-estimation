@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
+from torchvision.transforms import Normalize
+import torchaudio.transforms as T
 
 # Project files
 from src.dataset import AudioSpectrogramDataset as Dataset
@@ -18,7 +20,7 @@ REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
 MODEL_PATHS = [
-    "saved_models/2024-11-14_123650_18k_samples",
+    "saved_models/2024-11-15_192658",
 ]
 BATCH_SIZE = 16
 DEVICE = torch.device("cpu")
@@ -37,7 +39,12 @@ def loadModels():
 
 def predictResults():
     # Dataset
-    dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT)
+    DATA_MEAN = 203.9879
+    DATA_STD = 0.7629
+    SAMPLE_RATE = 192000
+    TRANSFORM = T.MelSpectrogram(sample_rate=SAMPLE_RATE, n_mels=256)
+    INPUT_NORMALIZE = Normalize([DATA_MEAN], [DATA_STD])
+    dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
     # Save directory

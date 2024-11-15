@@ -27,12 +27,11 @@ def replaceRootPath(original_path, new_root):
 class AudioSpectrogramDataset(Dataset):
     def __init__(
             self, dataset_path, replaced_data_path_root=None, transform=None,
-            input_normalize=None, sample_rate=192000, mel_bands=256,
+            input_normalize=None, sample_rate=192000,
         ):
         self.dataset = readJson(dataset_path)
         self.replaced_data_path_root = replaced_data_path_root
-        self.transform = transform or T.MelSpectrogram(
-            sample_rate=sample_rate, n_mels=mel_bands)
+        self.transform = transform
         self.input_normalize = input_normalize
         self.sample_rate = sample_rate
 
@@ -66,6 +65,8 @@ class AudioSpectrogramDataset(Dataset):
         
         # Transform the waveform to a spectrogram
         spectrogram = self.transform(audio_waveform)
+        if self.input_normalize:
+            spectrogram = self.input_normalize(spectrogram)
         
         return spectrogram, occupancy
 

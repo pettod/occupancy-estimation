@@ -4,9 +4,8 @@ from multiprocessing import cpu_count
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torchvision.transforms import (
-    Compose, ToTensor, Normalize
-)
+from torchvision.transforms import Normalize
+import torchaudio.transforms as T
 
 from src.dataset import AudioSpectrogramDataset as Dataset
 from src.loss_functions import l1, GANLoss
@@ -61,12 +60,13 @@ class CONFIG:
     ITERATIONS_PER_EPOCH = 1
 
     # Transforms and dataset
-    TRAIN_TRANSFORM = None
-    VALID_TRANSFORM = None
-    TEST_TRANSFORM = ToTensor()
-    INPUT_NORMALIZE = Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    TRAIN_DATASET = Dataset(TRAIN_FILE, REPLACED_DATA_PATH_ROOT)
-    VALID_DATASET = Dataset(VALID_FILE, REPLACED_DATA_PATH_ROOT)
+    DATA_MEAN = 203.9879
+    DATA_STD = 0.7629
+    SAMPLE_RATE = 192000
+    TRANSFORM = T.MelSpectrogram(sample_rate=SAMPLE_RATE, n_mels=256)
+    INPUT_NORMALIZE = Normalize([DATA_MEAN], [DATA_STD])
+    TRAIN_DATASET = Dataset(TRAIN_FILE, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)
+    VALID_DATASET = Dataset(VALID_FILE, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)
 
     # General parameters
     DROP_LAST_BATCH = False
