@@ -17,6 +17,7 @@ DATA_DIR
 """
 
 DATA_DIR = "data_original"
+RECORDING_DIRS = glob(os.path.join(DATA_DIR, "*/*/*/"))
 CUTOFF_FREQ = 10000
 PLOT = False  # Super slow
 
@@ -85,8 +86,7 @@ def plotWaveformAndFrequency(time, original_data, filtered_data, sample_rate, ti
 def main():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     output_folder = f"{timestamp}_highpass_{CUTOFF_FREQ}"
-    recording_dirs = glob(os.path.join(DATA_DIR, "*/*/*/"))
-    for recording_dir in tqdm(recording_dirs):
+    for recording_dir in tqdm(RECORDING_DIRS):
         os.makedirs(os.path.join(output_folder, *recording_dir.split(os.sep)[1:]), exist_ok=True)
         wav_paths = glob(os.path.join(recording_dir, "*.WAV"))
         for wav_path in sorted(wav_paths):
