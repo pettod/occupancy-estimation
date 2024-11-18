@@ -6,8 +6,6 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
-from torchvision.transforms import Normalize
-import torchaudio.transforms as T
 
 # Project files
 from src.dataset import AudioSpectrogramDataset as Dataset
@@ -19,32 +17,23 @@ DATA_FILENAME = "dataset_2-0s_valid.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATHS = [
-    "saved_models/2024-11-18_114937",
-]
+MODEL_PATH = "saved_models/2024-11-18_114937"
 BATCH_SIZE = 16
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("mps")
 
 
-def loadModels():
-    models = []
-    configs = []
-    for model_path in MODEL_PATHS:
-        config = import_module(os.path.join(
-            model_path, "codes.config").replace("/", ".")).CONFIG
-        model = config.MODELS[0].to(DEVICE)
-        loadModel(model, model_path=model_path)
-        models.append(model)
-        configs.append(config)
-    return models, configs
+def loadModelAndConfig():
+    config = import_module(os.path.join(
+        MODEL_PATH, "codes.config").replace("/", ".")).CONFIG
+    model = config.MODELS[0].to(DEVICE)
+    loadModel(model, model_path=MODEL_PATH)
+    return model, config
 
 
 def predictResults():
     # Save directory
     with torch.no_grad():
-        models, configs = loadModels()
-        model = models[0]
-        config = configs[0]
+        model, config = loadModelAndConfig()
 
         # Dataset
         sample_rate = config.SAMPLE_RATE
