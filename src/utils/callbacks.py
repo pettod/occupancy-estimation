@@ -44,6 +44,7 @@ class EarlyStopping:
             "config.py",
             "src/architectures",
             "src/loss_functions.py",
+            "src/dataset.py",
         ]
         self.saveNetworkConfig()
 
