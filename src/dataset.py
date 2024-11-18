@@ -8,13 +8,14 @@ import matplotlib.pyplot as plt
 import os
 
 
+FILTERED_DATA_PATH = None  #"data_original/Audiomoth_10488200"
+
+
 def readJson(json_path):
     with open(json_path, "r") as f:
         data = json.load(f)
-    #data = [
-    #    sample for sample in data
-    #    if "data_original/20241104_105000" in sample["audio_file_path"]
-    #]
+    if FILTERED_DATA_PATH:
+        data = [d for d in data if FILTERED_DATA_PATH in d["audio_file_path"]]
     return data
 
 
