@@ -2,7 +2,10 @@ import torch
 
 
 def accuracy(y_pred, y_true):
-    y_pred = torch.round(y_pred)
+    if len(y_pred.shape) == 2 and y_pred.shape[1] > 1:
+        y_pred = torch.argmax(y_pred, dim=1)
+    else:
+        y_pred = torch.round(y_pred)
     numerator = torch.min(y_pred, y_true)
     denominator = torch.max(y_pred, y_true)
     
