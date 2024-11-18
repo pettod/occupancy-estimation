@@ -8,7 +8,7 @@ from torchvision.transforms import Normalize
 import torchaudio.transforms as T
 
 from src.dataset import AudioSpectrogramDataset as Dataset
-from src.loss_functions import l1, GANLoss
+from src.loss_functions import l1, GANLoss, crossEntropy
 from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
