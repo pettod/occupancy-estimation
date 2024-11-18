@@ -20,7 +20,7 @@ REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
 MODEL_PATHS = [
-    "saved_models/2024-11-15_192658",
+    "saved_models/2024-11-18_114937",
 ]
 BATCH_SIZE = 16
 DEVICE = torch.device("cpu")
@@ -28,28 +28,30 @@ DEVICE = torch.device("cpu")
 
 def loadModels():
     models = []
+    configs = []
     for model_path in MODEL_PATHS:
         config = import_module(os.path.join(
             model_path, "codes.config").replace("/", ".")).CONFIG
         model = config.MODELS[0].to(DEVICE)
         loadModel(model, model_path=model_path)
         models.append(model)
-    return models
+        configs.append(config)
+    return models, configs
 
 
 def predictResults():
-    # Dataset
-    DATA_MEAN = 203.9879
-    DATA_STD = 0.7629
-    SAMPLE_RATE = 192000
-    TRANSFORM = T.MelSpectrogram(sample_rate=SAMPLE_RATE, n_mels=256)
-    INPUT_NORMALIZE = Normalize([DATA_MEAN], [DATA_STD])
-    dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
-
     # Save directory
     with torch.no_grad():
-        model = loadModels()[0]
+        models, configs = loadModels()
+        model = models[0]
+        config = configs[0]
+
+        # Dataset
+        sample_rate = config.SAMPLE_RATE
+        transform = config.TRANSFORM
+        input_normalize = config.INPUT_NORMALIZE
+        dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, transform, input_normalize, sample_rate)
+        dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
         gt_pred = {}
 
         # Predict and save
@@ -58,7 +60,10 @@ def predictResults():
             predictions = model(x).squeeze(1).cpu().numpy()
             for gt, pred in zip(y, predictions):
                 gt = gt.astype(int)
-                pred = np.round(pred).astype(int)
+                if pred.shape[0] > 1:
+                    pred = np.argmax(pred).astype(int)
+                else:
+                    pred = np.round(pred).astype(int)
                 if gt in gt_pred:
                     gt_pred[gt].append(pred)
                 else:
