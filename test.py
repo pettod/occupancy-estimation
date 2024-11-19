@@ -14,22 +14,17 @@ from src.utils.utils import loadModel
 
 
 # Data paths
-DATA_FILENAME = "dataset_60-0s_train.json"
+DATA_FILENAME = "dataset_60-0s_valid.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATH = "saved_models/2024-11-19_185007"
+MODEL_PATH = "saved_models/2024-11-19_202614_60s-window"
 BATCH_SIZE = 16
 DEVICE = torch.device("mps")
 NUM_WORKERS = 0  #cpu_count()
 
-
-def loadModelAndConfig():
-    config = import_module(os.path.join(
-        MODEL_PATH, "codes.config").replace("/", ".")).CONFIG
-    model = config.MODELS[0].to(DEVICE)
-    loadModel(model, model_path=MODEL_PATH)
-    return model, config
+# Additional
+PRINT_AUDIO_THRESHOLD = 0.1  # Set to 0, if you don't want info
 
 
 def predictResults():
@@ -41,12 +36,12 @@ def predictResults():
         sample_rate = config.SAMPLE_RATE
         transform = config.TRANSFORM
         input_normalize = config.INPUT_NORMALIZE
-        dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, transform, input_normalize, sample_rate)
-        dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+        dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, transform, input_normalize, sample_rate, True)
+        dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
         gt_pred = {}
 
         # Predict and save
-        for i, (x, y) in enumerate(tqdm(dataloader)):
+        for i, (x, y, file_info) in enumerate(tqdm(dataloader)):
             #plt.imshow(x[0].squeeze(0).numpy(), aspect='auto', origin='lower')
             #plt.specgram(x[0].squeeze(0).numpy(), NFFT=1024, Fs=sample_rate, noverlap=512, cmap='viridis')
             #plt.plot(x[0].squeeze(0).numpy())
@@ -54,7 +49,7 @@ def predictResults():
             #plt.show()
             x, y = x.to(DEVICE), y.numpy()
             predictions = model(x).squeeze(1).cpu().numpy()
-            for gt, pred in zip(y, predictions):
+            for i, (gt, pred) in enumerate(zip(y, predictions)):
                 gt = gt.astype(int)
                 if len(pred.shape) == 0:
                     pred = np.round(pred).astype(int)
@@ -64,9 +59,34 @@ def predictResults():
                     gt_pred[gt].append(pred)
                 else:
                     gt_pred[gt] = [pred]
+                pred_accuracy = accuracy(pred, gt)
+                if pred_accuracy < PRINT_AUDIO_THRESHOLD:
+                    print("\nOccupancy: ", gt)
+                    print("Prediction:", pred)
+                    print("Accuracy:   {}%".format(round(100 * pred_accuracy, 1)))
+                    print("Original file path: ", file_info["audio_file_path"][i])
+                    print("Replaced file path: ", file_info["replaced_audio_file_path"][i])
+                    start = int(file_info["start_time"][i])
+                    end = int(file_info["end_time"][i])
+                    print(f"Time: {start//60:02}:{start%60:02} - {end//60:02}:{end%60:02}\n")
             #if i == 10:
             #    break
     return gt_pred
+
+
+def loadModelAndConfig():
+    config = import_module(os.path.join(
+        MODEL_PATH, "codes.config").replace("/", ".")).CONFIG
+    model = config.MODELS[0].to(DEVICE)
+    loadModel(model, model_path=MODEL_PATH)
+    return model, config
+
+
+def accuracy(pred, gt):
+    if pred == 0 or gt == 0:
+        return 0.0
+    else:
+        return min(pred, gt) / max(pred, gt)
 
 
 def candleChart(gt_pred):

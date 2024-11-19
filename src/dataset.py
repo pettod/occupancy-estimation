@@ -27,13 +27,14 @@ def replaceRootPath(original_path, new_root):
 class AudioSpectrogramDataset(Dataset):
     def __init__(
             self, dataset_path, replaced_data_path_root=None, transform=None,
-            input_normalize=None, sample_rate=192000,
+            input_normalize=None, sample_rate=192000, get_file_info=False,
         ):
         self.dataset = readJson(dataset_path)
         self.replaced_data_path_root = replaced_data_path_root
         self.transform = transform
         self.input_normalize = input_normalize
         self.sample_rate = sample_rate
+        self.get_file_info = get_file_info
 
     def __len__(self):
         return len(self.dataset)
@@ -41,11 +42,18 @@ class AudioSpectrogramDataset(Dataset):
     def __getitem__(self, i):
         seed = random.randint(0, 2**32)
         audio_file_path = self.dataset[i]["audio_file_path"]
+        start_time = self.dataset[i]["start_time"]
+        end_time = self.dataset[i]["end_time"]
+        occupancy = torch.tensor(int(self.dataset[i]["occupancy"]), dtype=torch.float32)
+        file_info = {
+            "audio_file_path": audio_file_path,
+            "start_time": start_time,
+            "end_time": end_time,
+        }
         if self.replaced_data_path_root:
             audio_file_path = replaceRootPath(audio_file_path, self.replaced_data_path_root)
-        occupancy = torch.tensor(int(self.dataset[i]["occupancy"]), dtype=torch.float32)
-        start_time = self.dataset[i]["start_time"]
-        duration = self.dataset[i]["end_time"] - start_time
+        file_info["replaced_audio_file_path"] = audio_file_path
+        duration = end_time - start_time
         num_frames = int(duration * self.sample_rate)
         frame_offset = int(start_time * self.sample_rate)
         audio_waveform, original_sample_rate = torchaudio.load(
@@ -68,7 +76,10 @@ class AudioSpectrogramDataset(Dataset):
         if self.input_normalize:
             spectrogram = self.input_normalize(spectrogram)
         #spectrogram[:] = occupancy
-        return spectrogram, occupancy
+        if self.get_file_info:
+            return spectrogram, occupancy, file_info
+        else:
+            return spectrogram, occupancy
 
 
 if __name__ == "__main__":
