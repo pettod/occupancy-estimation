@@ -69,35 +69,50 @@ def predictResults():
     return gt_pred
 
 
-def main():
-    results = predictResults()
-
+def candleChart(gt_pred):
     # Plot data
     fig, ax = plt.subplots(figsize=(8, 6))
-    keys = sorted(results.keys())
-    for i, key in enumerate(keys):
-        values = results[key]
+    gt_occupancies = sorted(gt_pred.keys())
+    pred_occupancies =[]
+    for i, key in enumerate(gt_occupancies):
+        values = gt_pred[key]
         mean = np.mean(values)
+        pred_occupancies.append(mean)
         std = np.std(values)
         min_value = min(values)
-        max_value = min(values)
-        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=4, alpha=1.0, label="Standard deviation" if i == 0 else "")
+        max_value = max(values)
+        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=4, alpha=0.7, label="Standard deviation" if i == 0 else "")
         ax.plot([i, i], [min_value, max_value], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
+        ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
         ax.plot(i, max_value, "_", color="black", markersize=6)
         ax.plot(i, min_value, "_", color="black", markersize=6)
-        ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
         ax.plot(i, mean, "x", color="red", markersize=6, label="Prediction mean" if i == 0 else "")
+    ax.plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=0.4)
+    ax.plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=0.4)
 
     # Plot style
     ax.set_xlabel("Ground truth occupancy")
     ax.set_ylabel("Predicted occupancy")
     ax.set_title("Occupancy prediction stability")
     ax.set_ylim(0)
-    plt.xticks(ticks=range(len(keys)), labels=keys)
+    plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.5)
     plt.show()
 
 
+def getExampleData():
+    gt_pred = {}
+    for gt in range(10):
+        number_of_samples = 20 + np.random.randint(20, size=1)[0]
+        low_value = np.random.randint(-10, -1)
+        high_value = np.random.randint(1, 10)
+        predicted_occupancies = np.array(gt) + np.random.randint(low_value, high_value, size=number_of_samples)
+        predicted_occupancies[predicted_occupancies < 0] = 0
+        gt_pred[gt] = list(predicted_occupancies)
+    return gt_pred
+
+
 if __name__ == "__main__":
-    main()
+    gt_pred = predictResults()  #getExampleData()
+    candleChart(gt_pred)
