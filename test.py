@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
+from multiprocessing import cpu_count
 
 # Project files
 from src.dataset import AudioSpectrogramDataset as Dataset
@@ -17,9 +18,10 @@ DATA_FILENAME = "dataset_2-0s_valid.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATH = "saved_models/2024-11-18_114937"
+MODEL_PATH = "saved_models/2024-11-19_120843_gt-in-input"
 BATCH_SIZE = 16
 DEVICE = torch.device("mps")
+NUM_WORKERS = 0  #cpu_count()
 
 
 def loadModelAndConfig():
@@ -40,19 +42,24 @@ def predictResults():
         transform = config.TRANSFORM
         input_normalize = config.INPUT_NORMALIZE
         dataset = Dataset(DATA_FILENAME, REPLACED_DATA_PATH_ROOT, transform, input_normalize, sample_rate)
-        dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+        dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
         gt_pred = {}
 
         # Predict and save
         for i, (x, y) in enumerate(tqdm(dataloader)):
+            #plt.imshow(x[0].squeeze(0).numpy(), aspect='auto', origin='lower')
+            #plt.specgram(x[0].squeeze(0).numpy(), NFFT=1024, Fs=sample_rate, noverlap=512, cmap='viridis')
+            #plt.plot(x[0].squeeze(0).numpy())
+            #plt.title(y[0])
+            #plt.show()
             x, y = x.to(DEVICE), y.numpy()
             predictions = model(x).squeeze(1).cpu().numpy()
             for gt, pred in zip(y, predictions):
                 gt = gt.astype(int)
-                if pred.shape[0] > 1:
-                    pred = np.argmax(pred).astype(int)
-                else:
+                if len(pred.shape) == 0:
                     pred = np.round(pred).astype(int)
+                else:
+                    pred = np.argmax(pred).astype(int)
                 if gt in gt_pred:
                     gt_pred[gt].append(pred)
                 else:
@@ -65,32 +72,23 @@ def predictResults():
 def main():
     results = predictResults()
 
-    # Prepare data for visualization
-    keys = sorted(results.keys())
-    means = []
-    standard_deviations = []
-    min_values = []
-    max_values = []
-
-    # Calculate standard deviation, minimum, and maximum for each list
-    for key, values in results.items():
-        mean = np.mean(values)
-        std_dev = np.std(values)
-        means.append(mean)
-        standard_deviations.append(std_dev)
-        min_values.append(min(values))
-        max_values.append(max(values))
-
+    # Plot data
     fig, ax = plt.subplots(figsize=(8, 6))
+    keys = sorted(results.keys())
     for i, key in enumerate(keys):
-        ax.plot([i, i], [means[i] - standard_deviations[i], means[i] + standard_deviations[i]], color="red", linewidth=4, alpha=1.0, label="Standard deviation" if i == 0 else "")
-        ax.plot([i, i], [min_values[i], max_values[i]], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
-        ax.plot(i, max_values[i], "_", color="black", markersize=6)
-        ax.plot(i, min_values[i], "_", color="black", markersize=6)
-        ax.plot(i, means[i], "o", color="green", markersize=6, label="Prediction mean" if i == 0 else "")
+        values = results[key]
+        mean = np.mean(values)
+        std = np.std(values)
+        min_value = min(values)
+        max_value = min(values)
+        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=4, alpha=1.0, label="Standard deviation" if i == 0 else "")
+        ax.plot([i, i], [min_value, max_value], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
+        ax.plot(i, max_value, "_", color="black", markersize=6)
+        ax.plot(i, min_value, "_", color="black", markersize=6)
         ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
+        ax.plot(i, mean, "x", color="red", markersize=6, label="Prediction mean" if i == 0 else "")
 
-    # Customize the plot
+    # Plot style
     ax.set_xlabel("Ground truth occupancy")
     ax.set_ylabel("Predicted occupancy")
     ax.set_title("Occupancy prediction stability")
@@ -98,9 +96,8 @@ def main():
     plt.xticks(ticks=range(len(keys)), labels=keys)
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.5)
-
-    # Show the plot
     plt.show()
 
 
-main()
+if __name__ == "__main__":
+    main()
