@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class Net(nn.Module):
-    def __init__(self, feature_dim=1920, num_heads=8, num_layers=2, ff_hidden_dim=2048, dropout=0.1):
+    def __init__(self, feature_dim=2880, num_heads=8, num_layers=1, ff_hidden_dim=512, dropout=0.1):
         super(Net, self).__init__()
         self.feature_dim = feature_dim
         
@@ -20,7 +20,8 @@ class Net(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
         # Fully connected layer to reduce the output to a single value
-        self.fc = nn.Linear(feature_dim, 1)
+        self.fc = nn.Linear(feature_dim, 50)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         # Reshape input from (batch, 1, 256, 1921) to (batch, 256, 1921)
@@ -37,9 +38,9 @@ class Net(nn.Module):
         x = x[-1]  # Shape: (batch, 1921)
         
         # Pass through the fully connected layer to produce output of shape (batch, 1)
-        x = F.relu(self.fc(x))  # Shape: (batch, 1)
+        x = self.softmax(self.fc(x))  # Shape: (batch, 1)
         #print(x)
-        return 100 * x
+        return x
 
 
 if __name__ == "__main__":

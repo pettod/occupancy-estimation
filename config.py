@@ -1,6 +1,4 @@
-import os
 from multiprocessing import cpu_count
-
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -15,8 +13,8 @@ from src.architectures.model import Net
 
 class CONFIG:
     # Data paths
-    TRAIN_FILE = "dataset_2-0s_train.json"
-    VALID_FILE = "dataset_2-0s_valid.json"
+    TRAIN_FILE = "dataset_60-0s_train.json"
+    VALID_FILE = "dataset_60-0s_valid.json"
     REPLACED_DATA_PATH_ROOT = "data_high-pass"
     TEST_IMAGE_PATHS = [
     ]
@@ -47,7 +45,7 @@ class CONFIG:
 
     # Cost function
     LOSS_FUNCTIONS = [
-        [l1],
+        [crossEntropy],
     ]
     LOSS_WEIGHTS = [
         [1],
@@ -60,10 +58,10 @@ class CONFIG:
     ITERATIONS_PER_EPOCH = 1
 
     # Transforms and dataset
-    DATA_MEAN = 203.9879
-    DATA_STD = 0.7629
+    DATA_MEAN = 14.4809
+    DATA_STD = 552.4592
     SAMPLE_RATE = 192000
-    TRANSFORM = T.MelSpectrogram(sample_rate=SAMPLE_RATE, n_mels=256)
+    TRANSFORM = T.MelSpectrogram(sample_rate=SAMPLE_RATE, n_mels=64, n_fft=8000)
     INPUT_NORMALIZE = Normalize([DATA_MEAN], [DATA_STD])
     TRAIN_DATASET = Dataset(TRAIN_FILE, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)
     VALID_DATASET = Dataset(VALID_FILE, REPLACED_DATA_PATH_ROOT, TRANSFORM, INPUT_NORMALIZE, SAMPLE_RATE)

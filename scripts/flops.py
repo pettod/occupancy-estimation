@@ -4,7 +4,7 @@ from fvcore.nn import FlopCountAnalysis
 import torch
 
 
-INPUT_SHAPE = (1, 256, 1921)
+INPUT_SHAPE = (1, 64, 2881)
 SINGLE_VALUE_OPERATIONS = ["ReLU", "Sigmoid", "Tanh"]
 POOL1D_LAYERS = ["MaxPool1d", "AvgPool1d"]
 CONV1D_LAYERS = ["Conv1d", "ConvTranspose1d"]

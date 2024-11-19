@@ -9,7 +9,7 @@ import random
 
 
 DATA_ROOT = "data_original"
-SAMPLE_LENGTH = 2.0
+SAMPLE_LENGTH = 60.0
 TRAIN_VALID_SPLIT = 0.8
 PRINT_JSON = False
 

@@ -1,7 +1,6 @@
 import random
 from torch.utils.data import Dataset
 import torchaudio
-import torchaudio.transforms as T
 import json
 import torch
 import matplotlib.pyplot as plt
@@ -68,7 +67,7 @@ class AudioSpectrogramDataset(Dataset):
         spectrogram = self.transform(audio_waveform)
         if self.input_normalize:
             spectrogram = self.input_normalize(spectrogram)
-        
+        #spectrogram[:] = occupancy
         return spectrogram, occupancy
 
 

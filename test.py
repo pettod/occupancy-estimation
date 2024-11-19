@@ -14,11 +14,11 @@ from src.utils.utils import loadModel
 
 
 # Data paths
-DATA_FILENAME = "dataset_2-0s_valid.json"
+DATA_FILENAME = "dataset_60-0s_train.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATH = "saved_models/2024-11-19_120843_gt-in-input"
+MODEL_PATH = "saved_models/2024-11-19_185007"
 BATCH_SIZE = 16
 DEVICE = torch.device("mps")
 NUM_WORKERS = 0  #cpu_count()
