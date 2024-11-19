@@ -6,7 +6,7 @@ from torchvision.transforms import Normalize
 import torchaudio.transforms as T
 
 from src.dataset import AudioSpectrogramDataset as Dataset
-from src.loss_functions import l1, GANLoss, crossEntropy
+from src.loss_functions import l1, GANLoss, crossEntropy, mseLossForClassification
 from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
@@ -54,7 +54,7 @@ class CONFIG:
     # Hyperparameters
     EPOCHS = 1000
     BATCH_SIZE = 16
-    PATIENCE = 6
+    PATIENCE = 20
     ITERATIONS_PER_EPOCH = 1
 
     # Transforms and dataset

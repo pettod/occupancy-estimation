@@ -4,16 +4,16 @@ import torch.nn.functional as F
 
 
 class Net(nn.Module):
-    def __init__(self, feature_dim=2880, num_heads=8, num_layers=1, ff_hidden_dim=512, dropout=0.1):
+    def __init__(self, feature_dim=2880, num_heads=8, num_layers=1, ff_hidden_dim=128, dropout=0.1):
         super(Net, self).__init__()
-        self.feature_dim = feature_dim
         
         # Transformer Encoder Layer
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=feature_dim, 
             nhead=num_heads, 
             dim_feedforward=ff_hidden_dim,
-            dropout=dropout
+            dropout=dropout,
+            batch_first=False,
         )
         
         # Transformer Encoder

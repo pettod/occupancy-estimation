@@ -12,6 +12,33 @@ def l1(y_pred, y_true):
     return torch.mean(torch.abs(y_true - y_pred))
 
 
+def mseLossForClassification(y_pred, y_true):
+    """
+    Computes the Mean Squared Error (MSE) loss between the softmax probabilities of predictions
+    and a one-hot encoding of the ground truth labels.
+
+    Args:
+    - y_pred (torch.Tensor): Predicted logits with shape (batch_size, 50).
+    - y_true (torch.Tensor): Ground truth class indices with shape (batch_size).
+
+    Returns:
+    - torch.Tensor: Computed MSE loss.
+    """
+    # Convert logits to probabilities using softmax
+    y_pred_softmax = F.softmax(y_pred, dim=1)
+
+    # Create one-hot encoding of y_true
+    batch_size = y_true.size(0)
+    num_classes = y_pred.size(1)
+    y_true_one_hot = torch.zeros(batch_size, num_classes, device=y_pred.device)
+    y_true_one_hot.scatter_(1, y_true.long().unsqueeze(1), 1.0)
+
+    # Compute Mean Squared Error (MSE) loss
+    mse_loss = F.mse_loss(y_pred_softmax, y_true_one_hot, reduction='mean')
+
+    return mse_loss
+
+
 class GANLoss(nn.Module):
     """Define GAN loss.
     Args:
