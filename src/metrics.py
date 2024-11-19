@@ -6,6 +6,7 @@ def accuracy(y_pred, y_true):
         y_pred = torch.argmax(y_pred, dim=1)
     else:
         y_pred = torch.round(y_pred)
+    y_pred[y_pred < 0] = 0
     numerator = torch.min(y_pred, y_true)
     denominator = torch.max(y_pred, y_true)
     
