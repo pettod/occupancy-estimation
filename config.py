@@ -1,4 +1,5 @@
 from multiprocessing import cpu_count
+import os
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -11,11 +12,14 @@ from src.architectures.discriminator import UNetDiscriminatorSN
 from src.architectures.model import Net
 
 
+DATA_ROOT = ""
+
+
 class CONFIG:
     # Data paths
-    TRAIN_FILE = "dataset_60-0s_train.json"
-    VALID_FILE = "dataset_60-0s_valid.json"
-    REPLACED_DATA_PATH_ROOT = "data_high-pass"
+    TRAIN_FILE = os.path.join("dataset_60-0s_train.json")
+    VALID_FILE = os.path.join("dataset_60-0s_valid.json")
+    REPLACED_DATA_PATH_ROOT = os.path.join("data_high-pass")
     TEST_IMAGE_PATHS = [
     ]
 
