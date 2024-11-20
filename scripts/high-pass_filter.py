@@ -89,7 +89,7 @@ def main():
     for recording_dir in tqdm(RECORDING_DIRS):
         os.makedirs(os.path.join(output_folder, *recording_dir.split(os.sep)[1:]), exist_ok=True)
         wav_paths = glob(os.path.join(recording_dir, "*.WAV"))
-        for wav_path in sorted(wav_paths):
+        for wav_path in tqdm(sorted(wav_paths)):
             data, sample_rate = sf.read(wav_path)
             output_filename = os.path.join(output_folder, *wav_path.split(os.sep)[1:])
 
