@@ -18,7 +18,7 @@ DATA_FILENAME = "dataset_60-0s_valid.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATH = "saved_models/2024-11-19_202614_60s-window"
+MODEL_PATH = "saved_models/2024-11-20_110334_60s-window_1500-samples"
 BATCH_SIZE = 16
 DEVICE = torch.device("mps")
 NUM_WORKERS = 0  #cpu_count()
@@ -89,7 +89,7 @@ def accuracy(pred, gt):
         return min(pred, gt) / max(pred, gt)
 
 
-def candleChart(gt_pred):
+def candleChart(gt_pred, marker_width=8, alpha=0.5):
     # Plot data
     fig, ax = plt.subplots(figsize=(8, 6))
     gt_occupancies = sorted(gt_pred.keys())
@@ -101,14 +101,14 @@ def candleChart(gt_pred):
         std = np.std(values)
         min_value = min(values)
         max_value = max(values)
-        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=4, alpha=0.7, label="Standard deviation" if i == 0 else "")
+        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=marker_width, alpha=alpha, label="Standard deviation" if i == 0 else "")
         ax.plot([i, i], [min_value, max_value], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
-        ax.plot(i, key, "o", color="blue", markersize=6, label="Ground truth" if i == 0 else "")
-        ax.plot(i, max_value, "_", color="black", markersize=6)
-        ax.plot(i, min_value, "_", color="black", markersize=6)
-        ax.plot(i, mean, "x", color="red", markersize=6, label="Prediction mean" if i == 0 else "")
-    ax.plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=0.4)
-    ax.plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=0.4)
+        ax.plot(i, key, "o", color="blue", markersize=marker_width, label="Ground truth" if i == 0 else "")
+        ax.plot(i, max_value, "_", color="black", markersize=marker_width)
+        ax.plot(i, min_value, "_", color="black", markersize=marker_width)
+        ax.plot(i, mean, "x", color="red", markersize=marker_width, label="Prediction mean" if i == 0 else "")
+    ax.plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=alpha)
+    ax.plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
 
     # Plot style
     ax.set_xlabel("Ground truth occupancy")
@@ -123,7 +123,7 @@ def candleChart(gt_pred):
 
 def getExampleData():
     gt_pred = {}
-    for gt in range(10):
+    for gt in range(40):
         number_of_samples = 20 + np.random.randint(20, size=1)[0]
         low_value = np.random.randint(-10, -1)
         high_value = np.random.randint(1, 10)
