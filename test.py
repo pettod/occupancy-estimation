@@ -146,10 +146,13 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
 
     # Plot style
     pred_accuracy, pred_absolute_std, pred_relative_std = accuracyAndStdDataset(gt_pred)
-    ax[0].set_title("Occupancy prediction\naccuracy: {}%, absolute STD: {} people, relative STD: {}%".format(
-        round(100 * pred_accuracy, 1),
-        round(pred_absolute_std, 1),
-        round(100 * pred_relative_std, 1)))
+    ax[0].set_title(
+        f"Occupancy Prediction\n"
+        f"$\mathbf{{Accuracy:}}$ {round(100 * pred_accuracy, 1)}%, "
+        f"$\mathbf{{Absolute\ STD:}}$ {round(pred_absolute_std, 1)} people, "
+        f"$\mathbf{{Relative\ STD:}}$ {round(100 * pred_relative_std, 1)}%",
+        loc="center",
+    )
     ax[0].set_ylabel("Predicted occupancy")
     ax[0].set_ylim(0)
     plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
