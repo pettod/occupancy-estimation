@@ -14,7 +14,7 @@ from src.utils.utils import loadModel
 
 
 # Data paths
-DATA_FILENAME = "dataset_60-0s_valid.json"
+DATA_FILENAME = "dataset_60-0s_train.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
@@ -89,6 +89,20 @@ def accuracy(pred, gt):
         return min(pred, gt) / max(pred, gt)
 
 
+def accuracyAndStdDataset(gt_pred):
+    accuracies = []
+    absolute_stds = []
+    relative_stds = []
+    for gt in gt_pred.keys():
+        predictions = gt_pred[gt]
+        accuracies += [accuracy(p, gt) for p in predictions]
+        std = np.std(predictions)
+        absolute_stds.append(std)
+        if gt != 0:
+            relative_stds.append(std / gt)
+    return np.mean(accuracies), np.mean(absolute_stds), np.mean(relative_stds)
+
+
 def candleChart(gt_pred, marker_width=8, alpha=0.5):
     # Plot data
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -111,9 +125,13 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     ax.plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
 
     # Plot style
+    pred_accuracy, pred_absolute_std, pred_relative_std = accuracyAndStdDataset(gt_pred)
     ax.set_xlabel("Ground truth occupancy")
     ax.set_ylabel("Predicted occupancy")
-    ax.set_title("Occupancy prediction stability")
+    ax.set_title("Occupancy prediction\naccuracy: {}%, absolute STD: {} people, relative STD: {}%".format(
+        round(100 * pred_accuracy, 1),
+        round(pred_absolute_std, 1),
+        round(100 * pred_relative_std, 1)))
     ax.set_ylim(0)
     plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
     ax.legend()
