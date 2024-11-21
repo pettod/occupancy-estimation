@@ -104,9 +104,19 @@ def accuracyAndStdDataset(gt_pred):
 
 
 def candleChart(gt_pred, marker_width=8, alpha=0.5):
-    # Plot data
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(
+        2, 1,
+        figsize=(8, 6),
+        gridspec_kw={"height_ratios": [5, 1]},
+        sharex=True,
+    )
+    plt.subplots_adjust(wspace=0, hspace=0)
     gt_occupancies = sorted(gt_pred.keys())
+    number_of_occupancies = []
+    for gt in gt_occupancies:
+        number_of_occupancies += len(gt_pred[gt]) * [gt]
+
+    # Plot precition accuracy candle chart
     pred_occupancies =[]
     for i, key in enumerate(gt_occupancies):
         values = gt_pred[key]
@@ -115,27 +125,32 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
         std = np.std(values)
         min_value = min(values)
         max_value = max(values)
-        ax.plot([i, i], [mean - std, mean + std], color="green", linewidth=marker_width, alpha=alpha, label="Standard deviation" if i == 0 else "")
-        ax.plot([i, i], [min_value, max_value], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
-        ax.plot(i, key, "o", color="blue", markersize=marker_width, label="Ground truth" if i == 0 else "")
-        ax.plot(i, max_value, "_", color="black", markersize=marker_width)
-        ax.plot(i, min_value, "_", color="black", markersize=marker_width)
-        ax.plot(i, mean, "x", color="red", markersize=marker_width, label="Prediction mean" if i == 0 else "")
-    ax.plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=alpha)
-    ax.plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
+        ax[0].plot([i, i], [mean - std, mean + std], color="green", linewidth=marker_width, alpha=alpha, label="Standard deviation" if i == 0 else "")
+        ax[0].plot([i, i], [min_value, max_value], color="black", linewidth=1, alpha=1.0, label="Min and max" if i == 0 else "")
+        ax[0].plot(i, key, "o", color="blue", markersize=marker_width, label="Ground truth" if i == 0 else "")
+        ax[0].plot(i, max_value, "_", color="black", markersize=marker_width)
+        ax[0].plot(i, min_value, "_", color="black", markersize=marker_width)
+        ax[0].plot(i, mean, "x", color="red", markersize=marker_width, label="Prediction mean" if i == 0 else "")
+    ax[0].plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=alpha)
+    ax[0].plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
+
+    # Plot number of samples histogram
+    bins = range(len(gt_occupancies) + 1)
+    ax[1].hist(number_of_occupancies, bins=bins, edgecolor="black", align="left")
 
     # Plot style
     pred_accuracy, pred_absolute_std, pred_relative_std = accuracyAndStdDataset(gt_pred)
-    ax.set_xlabel("Ground truth occupancy")
-    ax.set_ylabel("Predicted occupancy")
-    ax.set_title("Occupancy prediction\naccuracy: {}%, absolute STD: {} people, relative STD: {}%".format(
+    ax[0].set_title("Occupancy prediction\naccuracy: {}%, absolute STD: {} people, relative STD: {}%".format(
         round(100 * pred_accuracy, 1),
         round(pred_absolute_std, 1),
         round(100 * pred_relative_std, 1)))
-    ax.set_ylim(0)
+    ax[0].set_ylabel("Predicted occupancy")
+    ax[0].set_ylim(0)
     plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
-    ax.legend()
-    ax.grid(True, linestyle="--", alpha=0.5)
+    ax[0].legend()
+    ax[0].grid(True, linestyle="--", alpha=0.5)
+    ax[1].set_xlabel("Ground truth occupancy")
+    ax[1].set_ylabel("Samples")
     plt.show()
 
 
