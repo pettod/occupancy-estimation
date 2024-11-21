@@ -41,7 +41,7 @@ def predictResults():
         gt_pred = {}
 
         # Predict and save
-        for i, (x, y, file_info) in enumerate(tqdm(dataloader)):
+        for j, (x, y, file_info) in enumerate(tqdm(dataloader)):
             #plt.imshow(x[0].squeeze(0).numpy(), aspect='auto', origin='lower')
             #plt.specgram(x[0].squeeze(0).numpy(), NFFT=1024, Fs=sample_rate, noverlap=512, cmap='viridis')
             #plt.plot(x[0].squeeze(0).numpy())
@@ -69,7 +69,7 @@ def predictResults():
                     start = int(file_info["start_time"][i])
                     end = int(file_info["end_time"][i])
                     print(f"Time: {start//60:02}:{start%60:02} - {end//60:02}:{end%60:02}\n")
-            #if i == 10:
+            #if j == 0:
             #    break
     return gt_pred
 
@@ -112,9 +112,7 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     )
     plt.subplots_adjust(wspace=0, hspace=0)
     gt_occupancies = sorted(gt_pred.keys())
-    number_of_occupancies = []
-    for gt in gt_occupancies:
-        number_of_occupancies += len(gt_pred[gt]) * [gt]
+    number_of_occupancies = [len(gt_pred[gt]) for gt in gt_occupancies]
 
     # Plot precition accuracy candle chart
     pred_occupancies =[]
@@ -135,8 +133,16 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     ax[0].plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
 
     # Plot number of samples histogram
-    bins = range(len(gt_occupancies) + 1)
-    ax[1].hist(number_of_occupancies, bins=bins, edgecolor="black", align="left")
+    bins = range(len(number_of_occupancies))
+    ax[1].bar(bins, number_of_occupancies, edgecolor="black", align="center", width=1.0)
+
+    # Add text on top of bins
+    for x, value in zip(bins, number_of_occupancies):
+        ax[1].text(
+            x,
+            value, str(int(value)),
+            ha="center", va="bottom", fontsize=5,
+        )
 
     # Plot style
     pred_accuracy, pred_absolute_std, pred_relative_std = accuracyAndStdDataset(gt_pred)
@@ -149,6 +155,7 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
     ax[0].legend()
     ax[0].grid(True, linestyle="--", alpha=0.5)
+    ax[1].set_ylim(0, max(number_of_occupancies) * 1.2)
     ax[1].set_xlabel("Ground truth occupancy")
     ax[1].set_ylabel("Samples")
     plt.show()
@@ -167,5 +174,5 @@ def getExampleData():
 
 
 if __name__ == "__main__":
-    gt_pred = predictResults()  #getExampleData()
+    gt_pred = predictResults() if True else getExampleData()
     candleChart(gt_pred)
