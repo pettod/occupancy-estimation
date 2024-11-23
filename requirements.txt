@@ -10,3 +10,4 @@ torch-tb-profiler
 tqdm
 optuna
 fvcore
+pyaudio
