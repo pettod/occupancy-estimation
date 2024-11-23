@@ -14,53 +14,41 @@ from scripts.highpass_filter import highpassFilter
 
 
 # Audio stream parameters
-AUDIO_FORMAT = pyaudio.paInt16  # 16-bit integer
-AUDIO_CHANNELS = 1              # Mono
 SAMPLING_RATE = 44100
 AUDIO_BUFFER = 1024             # Frames per buffer
-SMOOTH_FFT = False
-OCCUPANCY_HISTORY_SAMPLES = 100
-INTERVAL = 30
+AUDIO_FORMAT = pyaudio.paInt16  # 16-bit integer
 MODEL_PATH = "saved_models/2024-11-20_110334_60s-window_1500-samples"
+
+AUDIO_CHANNELS = 1              # Mono
 CUTOFF = 10000
+INTERVAL = 30
+OCCUPANCY_HISTORY_SAMPLES = 100
+SMOOTH_FFT = False
 
 
 class Model():
     def __init__(self, model_path):
         self.device = torch.device("cpu")
-        self.model, config = loadModelAndConfig(model_path, self.device)
+        with torch.no_grad():
+            self.model, config = loadModelAndConfig(model_path, self.device)
         self.sample_rate = config.SAMPLE_RATE
         self.transform = config.TRANSFORM
         self.input_normalize = config.INPUT_NORMALIZE
 
     def __call__(self, original_audio):
-        # high-pass filtering
-        filtered_audio = highpassFilter(original_audio, CUTOFF, self.sample_rate)
-        print(filtered_audio.shape)
-        # to torch
-        x = torch.from_numpy(filtered_audio.copy()).float().to(self.device)
-        print(x.shape)
-        print()
-        print()
-        print()
-        print()
-        print()
-        print()
-        print()
-        print()
-        print()
-        # spectrogram
-        x = self.transform(x).unsqueeze(0)
-        print(x.shape())
-        # normalization
-        x = self.input_normalize(x)
-        print(x.shape())
-        # inference .squeeze(1).cpu().numpy()
-        x = x.squeeze(0).cpu().numpy()
-        print(x.shape())
-        print("final x")
-        print()
-        return x
+        with torch.no_grad():
+            filtered_audio = highpassFilter(original_audio, CUTOFF, self.sample_rate)
+            x = torch.from_numpy(filtered_audio.copy()).float().to(self.device).unsqueeze(0)
+            
+            ##### Remove this random tensor #####
+            x = torch.rand(1, 11520000) * 2 - 1
+            ##### ######################### #####
+            
+            x = self.transform(x)
+            x = self.input_normalize(x)
+            pred = self.model(x.unsqueeze(0)).squeeze(0).cpu().numpy()
+            pred = np.argmax(pred).astype(int)
+        return pred
 
 
 def loadModelAndConfig(model_path, device):
@@ -184,7 +172,7 @@ class MicrophonePlot:
 
 
 def main():
-    model = None #Model(MODEL_PATH)
+    model = Model(MODEL_PATH)
     m = MicrophonePlot(model)
     m.run()
 
