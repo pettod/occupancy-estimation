@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.gridspec as gridspec
 from collections import deque
+import random
 
 
 # Audio stream parameters
@@ -12,12 +13,8 @@ AUDIO_CHANNELS = 1              # Mono
 SAMPLING_RATE = 44100
 AUDIO_BUFFER = 1024             # Frames per buffer
 SMOOTH_FFT = False
+OCCUPANCY_HISTORY_SAMPLES = 100
 
-
-def addElementAndGetMedian(queue, element):
-    queue.append(element)
-    sorted_queue = sorted(queue)
-    return 1 if np.mean(sorted_queue) > 0.3 else 0
 
 def moving_average(data, window_size=5):
     return np.convolve(data, np.ones(window_size)/window_size, mode="same")
@@ -35,6 +32,8 @@ class MicrophonePlot:
             frames_per_buffer=AUDIO_BUFFER,
         )
         self.is_paused = False
+        self.occupancy_history_samples = deque(maxlen=OCCUPANCY_HISTORY_SAMPLES)
+        for i in range(OCCUPANCY_HISTORY_SAMPLES): self.occupancy_history_samples.append(0)
         self.setFigures()
 
     def setFigures(self):
@@ -43,7 +42,8 @@ class MicrophonePlot:
         self.gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1], width_ratios=[1, 1])
         self.ax1 = self.fig.add_subplot(self.gs[0, 0])
         self.ax2 = self.fig.add_subplot(self.gs[1, 0])
-        self.ax3 = self.fig.add_subplot(self.gs[:, 1])
+        self.ax3 = self.fig.add_subplot(self.gs[0, 1]) #self.gs[:, 1])
+        self.ax4 = self.fig.add_subplot(self.gs[1, 1])
 
         # ax1 plot
         self.ax1.set_ylim(-3000, 3000)
@@ -54,8 +54,7 @@ class MicrophonePlot:
         self.ax2.set_yscale("log")
 
         # x1-axis time data and time-domain plot
-        self.x_time = np.arange(0, AUDIO_BUFFER)
-        self.plot_time_data, = self.ax1.plot(self.x_time, np.zeros(AUDIO_BUFFER))
+        self.plot_time_data, = self.ax1.plot(np.arange(0, AUDIO_BUFFER), np.zeros(AUDIO_BUFFER))
 
         # ax2 plot
         self.ax2.set_xlim(20, SAMPLING_RATE//2)  # Nyquist frequency (SAMPLING_RATE/2)
@@ -73,8 +72,14 @@ class MicrophonePlot:
         self.ax3.axis("off")
 
         # Set occupancy
-        self.plot_occupancy_count = self.ax3.text(0.5, 0.5, "", fontsize=200, ha="center", va="center")
-        self.occupancy_time_window = deque(maxlen=5)
+        self.plot_occupancy_count = self.ax3.text(0.5, 0.5, "", fontsize=170, ha="center", va="center")
+
+        # ax4 plot
+        self.ax4.set_title("Occupancy History")
+        self.ax4.set_xlabel("Sample")
+        self.ax4.set_ylabel("Occupancy")
+        self.occupancy_history, = self.ax4.plot(self.occupancy_history_samples)
+        self.ax4.set_ylim(0, 51)
 
     def update_plots(self, frame):
         # Read AUDIO_BUFFER-size data
@@ -89,11 +94,12 @@ class MicrophonePlot:
         self.plot_frequency_data.set_ydata(fft_data)
         
         # Occupancy
-        occupancy_count = 1 if np.mean(np.std(data)) > 20 else 0
-        occupancy_count = addElementAndGetMedian(self.occupancy_time_window, occupancy_count)
+        occupancy_count = random.randint(0, 5)
         self.plot_occupancy_count.set_text(occupancy_count)
+        self.occupancy_history_samples.append(occupancy_count)
+        self.occupancy_history.set_ydata(self.occupancy_history_samples)
         
-        return self.plot_time_data, self.plot_frequency_data, self.plot_occupancy_count
+        return self.plot_time_data, self.plot_frequency_data, self.plot_occupancy_count, self.occupancy_history
 
     def pauseAnimation(self, event):
         if event.key == " ":  # Check if the space bar was pressed
