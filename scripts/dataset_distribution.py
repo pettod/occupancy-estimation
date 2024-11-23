@@ -2,8 +2,8 @@ import json
 import matplotlib.pyplot as plt
 
 
-train_file = "dataset_2-0s_train.json"
-valid_file = "dataset_2-0s_valid.json"
+train_file = "dataset_60-0s_train.json"
+valid_file = "dataset_60-0s_valid.json"
 
 # Read data
 with open(train_file, "r") as file:
@@ -13,6 +13,7 @@ with open(valid_file, "r") as file:
 occupancies = [entry["occupancy"] for entry in data]
 
 # Plot histogram of counts
+print("Number of samples:", len(occupancies))
 bins = range(min(occupancies), max(occupancies) + 5)
 plt.hist(occupancies, bins=bins, edgecolor="black", align="left")
 
