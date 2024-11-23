@@ -36,3 +36,9 @@ pip install -e .
 ```bash
 python train.py <name_of_the_training>
 ```
+
+## TODO
+
+- now the mel scale is from 0 to 96kHz, use 10 to 30kHz
+- use STFT
+- log of mel values (new mean and std)
