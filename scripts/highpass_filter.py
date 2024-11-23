@@ -122,4 +122,5 @@ def main():
     print(f"Filtered audio files saved to {OUTPUT_DATA_DIR}")
 
 
-main()
+if __name__ == "__main__":
+    main()

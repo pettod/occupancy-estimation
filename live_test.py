@@ -5,6 +5,12 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.gridspec as gridspec
 from collections import deque
 import random
+from importlib import import_module
+import torch
+import os
+
+from src.utils.utils import loadModel
+from scripts.highpass_filter import highpassFilter
 
 
 # Audio stream parameters
@@ -15,17 +21,62 @@ AUDIO_BUFFER = 1024             # Frames per buffer
 SMOOTH_FFT = False
 OCCUPANCY_HISTORY_SAMPLES = 100
 INTERVAL = 30
+MODEL_PATH = "saved_models/2024-11-20_110334_60s-window_1500-samples"
+CUTOFF = 10000
 
 
-def predictOccupancy(audio_clip):
-    return random.randint(0, 50)
+class Model():
+    def __init__(self, model_path):
+        self.device = torch.device("cpu")
+        self.model, config = loadModelAndConfig(model_path, self.device)
+        self.sample_rate = config.SAMPLE_RATE
+        self.transform = config.TRANSFORM
+        self.input_normalize = config.INPUT_NORMALIZE
+
+    def __call__(self, original_audio):
+        # high-pass filtering
+        filtered_audio = highpassFilter(original_audio, CUTOFF, self.sample_rate)
+        print(filtered_audio.shape)
+        # to torch
+        x = torch.from_numpy(filtered_audio.copy()).float().to(self.device)
+        print(x.shape)
+        print()
+        print()
+        print()
+        print()
+        print()
+        print()
+        print()
+        print()
+        print()
+        # spectrogram
+        x = self.transform(x).unsqueeze(0)
+        print(x.shape())
+        # normalization
+        x = self.input_normalize(x)
+        print(x.shape())
+        # inference .squeeze(1).cpu().numpy()
+        x = x.squeeze(0).cpu().numpy()
+        print(x.shape())
+        print("final x")
+        print()
+        return x
+
+
+def loadModelAndConfig(model_path, device):
+    config = import_module(os.path.join(
+        model_path, "codes.config").replace("/", ".")).CONFIG
+    model = config.MODELS[0].to(device)
+    loadModel(model, model_path=model_path)
+    return model, config
+
 
 def moving_average(data, window_size=5):
     return np.convolve(data, np.ones(window_size)/window_size, mode="same")
 
 
 class MicrophonePlot:
-    def __init__(self):
+    def __init__(self, model=None):
         # Open audio stream from the microphone
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(
@@ -35,10 +86,18 @@ class MicrophonePlot:
             input=True,
             frames_per_buffer=AUDIO_BUFFER,
         )
+        self.model = model
         self.is_paused = False
         self.occupancy_history_samples = deque(maxlen=OCCUPANCY_HISTORY_SAMPLES)
         for i in range(OCCUPANCY_HISTORY_SAMPLES): self.occupancy_history_samples.append(0)
         self.setFigures()
+
+    def predictOccupancy(self, audio_clip):
+        if self.model:
+            prediction = self.model(audio_clip)
+        else:
+            prediction = random.randint(0, 50)
+        return prediction
 
     def setFigures(self):
         # Figure and axes
@@ -92,7 +151,7 @@ class MicrophonePlot:
         self.plot_frequency_data.set_ydata(fft_data)
         
         # Occupancy
-        occupancy_count = predictOccupancy(data)
+        occupancy_count = self.predictOccupancy(data)
         self.plot_occupancy_count.set_text(occupancy_count)
         self.occupancy_history_samples.append(occupancy_count)
         self.occupancy_history.set_ydata(self.occupancy_history_samples)
@@ -125,7 +184,8 @@ class MicrophonePlot:
 
 
 def main():
-    m = MicrophonePlot()
+    model = None #Model(MODEL_PATH)
+    m = MicrophonePlot(model)
     m.run()
 
 
