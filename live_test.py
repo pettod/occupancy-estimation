@@ -14,7 +14,11 @@ SAMPLING_RATE = 44100
 AUDIO_BUFFER = 1024             # Frames per buffer
 SMOOTH_FFT = False
 OCCUPANCY_HISTORY_SAMPLES = 100
+INTERVAL = 30
 
+
+def predictOccupancy(audio_clip):
+    return random.randint(0, 50)
 
 def moving_average(data, window_size=5):
     return np.convolve(data, np.ones(window_size)/window_size, mode="same")
@@ -52,8 +56,6 @@ class MicrophonePlot:
         self.ax1.set_xlabel("Samples")
         self.ax1.set_ylabel("Amplitude")
         self.ax2.set_yscale("log")
-
-        # x1-axis time data and time-domain plot
         self.plot_time_data, = self.ax1.plot(np.arange(0, AUDIO_BUFFER), np.zeros(AUDIO_BUFFER))
 
         # ax2 plot
@@ -62,16 +64,12 @@ class MicrophonePlot:
         self.ax2.set_title("Frequency Domain")
         self.ax2.set_xlabel("Frequency (Hz)")
         self.ax2.set_ylabel("Magnitude")
-
-        # x2-axis frequency-domain data and plot
         self.x_freq = np.fft.fftfreq(AUDIO_BUFFER, 1/SAMPLING_RATE)[:AUDIO_BUFFER//2]  # Only positive frequencies
         self.plot_frequency_data, = self.ax2.plot(self.x_freq, np.zeros(AUDIO_BUFFER//2))
 
         # ax3 plot
         self.ax3.set_title("Occupancy")
         self.ax3.axis("off")
-
-        # Set occupancy
         self.plot_occupancy_count = self.ax3.text(0.5, 0.5, "", fontsize=170, ha="center", va="center")
 
         # ax4 plot
@@ -94,7 +92,7 @@ class MicrophonePlot:
         self.plot_frequency_data.set_ydata(fft_data)
         
         # Occupancy
-        occupancy_count = random.randint(0, 5)
+        occupancy_count = predictOccupancy(data)
         self.plot_occupancy_count.set_text(occupancy_count)
         self.occupancy_history_samples.append(occupancy_count)
         self.occupancy_history.set_ydata(self.occupancy_history_samples)
@@ -114,7 +112,7 @@ class MicrophonePlot:
         self.fig.canvas.mpl_connect("key_press_event", self.pauseAnimation)
 
         # Update plot
-        self.animation = FuncAnimation(self.fig, self.update_plots, blit=True, interval=30)
+        self.animation = FuncAnimation(self.fig, self.update_plots, blit=True, interval=INTERVAL)
 
         # Plot
         plt.tight_layout()
