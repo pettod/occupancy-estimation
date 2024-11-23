@@ -16,8 +16,8 @@ DATA_DIR
                 WAV files
 """
 
-DATA_DIR = "data_original"
-RECORDING_DIRS = glob(os.path.join(DATA_DIR, "*/*/*/"))
+INPUT_DATA_DIR = "data_original"
+OUTPUT_DATA_DIR = "data_high-pass"
 CUTOFF_FREQ = 10000
 PLOT = False  # Super slow
 
@@ -84,14 +84,22 @@ def plotWaveformAndFrequency(time, original_data, filtered_data, sample_rate, ti
 
 
 def main():
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    output_folder = f"{timestamp}_highpass_{CUTOFF_FREQ}"
-    for recording_dir in tqdm(RECORDING_DIRS):
-        os.makedirs(os.path.join(output_folder, *recording_dir.split(os.sep)[1:]), exist_ok=True)
+    input_dirs = glob(os.path.join(INPUT_DATA_DIR, "*/*/*/"))
+    existing_output_dirs = set(glob(os.path.join(OUTPUT_DATA_DIR, "*/*/*")))
+    filtered_input_dirs = [d for d in input_dirs if os.path.join(OUTPUT_DATA_DIR, os.path.relpath(d, INPUT_DATA_DIR)) not in existing_output_dirs]
+    print(f"Found {len(filtered_input_dirs)} directories to process:")
+    for i, f in enumerate(filtered_input_dirs, start=1):
+        print(f"{i}. {f}")
+    confirm_to_continue = input("Do you want to continue (y/n): ")
+    if confirm_to_continue.lower() != "y":
+        return
+
+    for recording_dir in tqdm(filtered_input_dirs):
+        os.makedirs(os.path.join(OUTPUT_DATA_DIR, *recording_dir.split(os.sep)[1:]), exist_ok=True)
         wav_paths = glob(os.path.join(recording_dir, "*.WAV"))
         for wav_path in tqdm(sorted(wav_paths)):
             data, sample_rate = sf.read(wav_path)
-            output_filename = os.path.join(output_folder, *wav_path.split(os.sep)[1:])
+            output_filename = os.path.join(OUTPUT_DATA_DIR, *wav_path.split(os.sep)[1:])
 
             # Mono
             if data.ndim == 1:  # Mono
@@ -105,8 +113,13 @@ def main():
 
             if PLOT:
                 plotWaveformAndFrequency(time, data, filtered_data, sample_rate, title="High-pass Filter Effect")
-            sf.write(output_filename, filtered_data, sample_rate)
-    print(f"Filtered audio files saved to {output_folder}")
+            try:
+                sf.write(output_filename, filtered_data, sample_rate)
+            except sf.LibsndfileError:
+                print(f"Error writing file {output_filename}")
+                print("Disk may be full")
+                continue
+    print(f"Filtered audio files saved to {OUTPUT_DATA_DIR}")
 
 
 main()
