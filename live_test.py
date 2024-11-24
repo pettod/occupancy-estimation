@@ -23,6 +23,7 @@ AUDIO_CHANNELS = 1              # Mono
 CUTOFF = 10000
 INTERVAL = 30
 OCCUPANCY_HISTORY_SAMPLES = 100
+OCCUPANCY_SMOOTHENED_SAMPLES = 10  # Min 1
 SMOOTH_FFT = False
 
 
@@ -76,8 +77,10 @@ class MicrophonePlot:
         )
         self.model = model
         self.is_paused = False
-        self.occupancy_history_samples = deque(maxlen=OCCUPANCY_HISTORY_SAMPLES)
-        for i in range(OCCUPANCY_HISTORY_SAMPLES): self.occupancy_history_samples.append(0)
+        self.occupancy_history_samples = deque(maxlen=OCCUPANCY_SMOOTHENED_SAMPLES)
+        self.occupancy_history_smoothened_samples = deque(maxlen=OCCUPANCY_HISTORY_SAMPLES)
+        for i in range(OCCUPANCY_SMOOTHENED_SAMPLES): self.occupancy_history_samples.append(0)
+        for i in range(OCCUPANCY_HISTORY_SAMPLES): self.occupancy_history_smoothened_samples.append(0)
         self.setFigures()
 
     def predictOccupancy(self, audio_clip):
@@ -123,7 +126,7 @@ class MicrophonePlot:
         self.ax4.set_title("Occupancy History")
         self.ax4.set_xlabel("Sample")
         self.ax4.set_ylabel("Occupancy")
-        self.occupancy_history, = self.ax4.plot(self.occupancy_history_samples)
+        self.occupancy_history, = self.ax4.plot(self.occupancy_history_smoothened_samples)
         self.ax4.set_ylim(0, 51)
 
     def update_plots(self, frame):
@@ -142,7 +145,8 @@ class MicrophonePlot:
         occupancy_count = self.predictOccupancy(data)
         self.plot_occupancy_count.set_text(occupancy_count)
         self.occupancy_history_samples.append(occupancy_count)
-        self.occupancy_history.set_ydata(self.occupancy_history_samples)
+        self.occupancy_history_smoothened_samples.append(round(np.mean(self.occupancy_history_samples)))
+        self.occupancy_history.set_ydata(self.occupancy_history_smoothened_samples)
         
         return self.plot_time_data, self.plot_frequency_data, self.plot_occupancy_count, self.occupancy_history
 
