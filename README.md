@@ -4,6 +4,15 @@
 
 ## Installation
 
+Install Nvidia drivers if not there:
+
+```bash
+sudo apt update
+sudo apt install ubuntu-drivers-common
+sudo ubuntu-drivers devices
+sudo apt install nvidia-driver-xxx
+```
+
 Install anaconda (if not installed):
 
 ```bash
@@ -31,6 +40,12 @@ conda install pytorch::pytorch torchvision torchaudio -c pytorch
 pip install -e .
 ```
 
+If pyaudio issues:
+
+```bash
+sudo apt install portaudio19-dev
+```
+
 ## Train
 
 ```bash
@@ -41,4 +56,6 @@ python train.py <name_of_the_training>
 
 - now the mel scale is from 0 to 96kHz, use 10 to 30kHz
 - use STFT
+
+## Didin't work
 - log of mel values (new mean and std)
