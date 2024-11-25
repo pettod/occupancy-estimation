@@ -10,6 +10,9 @@ TRAIN_DATASET = Dataset(
     TRAIN_FILE,
     REPLACED_DATA_PATH_ROOT,
     transform=CONFIG.TRANSFORM,
+    input_normalize=None,
+    sample_rate=CONFIG.SAMPLE_RATE,
+    get_file_info=False,
 )
 
 
