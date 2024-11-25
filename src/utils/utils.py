@@ -174,7 +174,7 @@ def loadModel(
             sum(p.numel() for p in model.parameters() if p.requires_grad),
             model_file_name.split('.')[0]))
 
-    validation_loss_min = np.Inf
+    validation_loss_min = 999999999999
     start_epoch = 1
     model_directory = os.path.join(
         model_root, time.strftime("%Y-%m-%d_%H%M%S"))

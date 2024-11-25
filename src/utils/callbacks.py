@@ -15,7 +15,7 @@ class EarlyStopping:
     """
     def __init__(
             self, save_model_directory, patience=10, verbose=False, delta=0,
-            counter=0, validation_loss_min=np.Inf):
+            counter=0, validation_loss_min=99999999999):
         """
         Args:
             patience : int
