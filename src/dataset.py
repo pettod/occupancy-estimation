@@ -5,6 +5,7 @@ import json
 import torch
 import matplotlib.pyplot as plt
 import os
+import torchaudio.transforms as T
 
 
 FILTERED_DATA_PATH = None  #"data_original/Audiomoth_10488200"
@@ -71,6 +72,10 @@ class AudioSpectrogramDataset(Dataset):
             #resampler = T.Resample(orig_freq=original_sample_rate, new_freq=self.sample_rate)
             #audio_waveform = resampler(audio_waveform)
         
+        # Resample, take only third of the samples
+        resampler = T.Resample(orig_freq=original_sample_rate, new_freq=original_sample_rate//3)
+        audio_waveform = resampler(audio_waveform)
+
         # Transform the waveform to a spectrogram
         spectrogram = self.transform(audio_waveform)
         if self.input_normalize:
