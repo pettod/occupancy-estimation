@@ -17,9 +17,9 @@ DATA_ROOT = ""
 
 class CONFIG:
     # Data paths
-    TRAIN_FILE = os.path.join("dataset_60-0s_train.json")
-    VALID_FILE = os.path.join("dataset_60-0s_valid.json")
-    REPLACED_DATA_PATH_ROOT = os.path.join("data_high-pass")
+    TRAIN_FILE = os.path.join(DATA_ROOT, "dataset_60-0s_train.json")
+    VALID_FILE = os.path.join(DATA_ROOT, "dataset_60-0s_valid.json")
+    REPLACED_DATA_PATH_ROOT = os.path.join(DATA_ROOT, "data_high-pass")
     TEST_IMAGE_PATHS = [
     ]
 
