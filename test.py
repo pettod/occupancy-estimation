@@ -18,7 +18,8 @@ DATA_FILENAME = "dataset_60-0s_train.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
-MODEL_PATH = "saved_models/2024-11-20_110334_60s-window_1500-samples"
+MODEL_PATH = "saved_models/2024-11-24_162635_32kHz-sampling-rate"
+MODEL_FILE_NAME = "model_0.pt" # model_0.pt or last_model_0.pt
 BATCH_SIZE = 16
 DEVICE = torch.device("mps")
 NUM_WORKERS = 0  #cpu_count()
@@ -78,7 +79,7 @@ def loadModelAndConfig():
     config = import_module(os.path.join(
         MODEL_PATH, "codes.config").replace("/", ".")).CONFIG
     model = config.MODELS[0].to(DEVICE)
-    loadModel(model, model_path=MODEL_PATH)
+    loadModel(model, model_path=MODEL_PATH, model_file_name=MODEL_FILE_NAME)
     return model, config
 
 
