@@ -7,6 +7,8 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 from multiprocessing import cpu_count
+import sys
+import datetime
 
 # Project files
 from src.dataset import AudioSpectrogramDataset as Dataset
@@ -26,6 +28,7 @@ NUM_WORKERS = 0  #cpu_count()
 
 # Additional
 PRINT_AUDIO_THRESHOLD = 0.1  # Set to 0, if you don't want info
+PLOT_RESULT = True if len(sys.argv) == 1 else False
 
 
 def predictResults():
@@ -162,7 +165,11 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     ax[1].set_ylim(0, max(number_of_occupancies) * 1.2)
     ax[1].set_xlabel("Ground truth occupancy")
     ax[1].set_ylabel("Samples")
-    plt.show()
+    if PLOT_RESULT:
+        plt.show()    
+    else:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        plt.savefig(f"{timestamp}_candle_chart.png", dpi=300)
 
 
 def getExampleData():
