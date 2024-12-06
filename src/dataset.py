@@ -25,19 +25,17 @@ def replaceRootPath(original_path, new_root):
     return transformed_path
 
 
-def augment(spectrogram):
-    # Apply augmentations with 50% probability each
-
+def augment(spectrogram, probability=0.7, time_mask_param=1000, freq_mask_param=3, number_of_masks=6):
     # Time domain augmentations
-    if random.random() < 0.5:
-        for _ in range(3):
-            time_mask = T.TimeMasking(time_mask_param=int(spectrogram.shape[1] * 0.05))
+    if random.random() < probability:
+        for _ in range(number_of_masks):
+            time_mask = T.TimeMasking(time_mask_param=time_mask_param)
             spectrogram = time_mask(spectrogram)
 
     # Frequency domain augmentations
-    if random.random() < 0.5:
-        for _ in range(3):
-            freq_mask = T.FrequencyMasking(freq_mask_param=3)
+    if random.random() < probability:
+        for _ in range(number_of_masks):
+            freq_mask = T.FrequencyMasking(freq_mask_param=freq_mask_param)
             spectrogram = freq_mask(spectrogram)
         
     return spectrogram
