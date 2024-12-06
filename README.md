@@ -27,16 +27,10 @@ You can undo this by running `conda init --reverse $SHELL`? [yes|no]
 ### Option 1
 
 ```bash
-conda env create -f environment.yml
-conda activate mems
-```
-
-### Option 2
-
-```bash
 conda create -n mems python=3.10.15
 conda activate mems
 conda install pytorch::pytorch torchvision torchaudio -c pytorch
+sudo apt install portaudio19-dev
 pip install -e .
 ```
 
@@ -44,6 +38,13 @@ If pyaudio issues:
 
 ```bash
 sudo apt install portaudio19-dev
+```
+
+### Option 2
+
+```bash
+conda env create -f environment.yml
+conda activate mems
 ```
 
 ## Train
@@ -54,7 +55,19 @@ python train.py <name_of_the_training>
 
 ## TODO
 
-- now the mel scale is from 0 to 96kHz, use 10 to 30kHz
+- Use buckets: 0, 1-5, 6-10, 11-15, 16-20, 21-25, 26-30, 31-35, 36-40, 41-45, 46-50
+- Augment data: transforms.FrequencyMasking, transforms.TimeMasking, https://towardsdatascience.com/audio-deep-learning-made-simple-sound-classification-step-by-step-cebc936bbe5
+- use desibels
+  def spectro_gram(aud, n_mels=64, n_fft=1024, hop_len=None):
+    sig,sr = aud
+    top_db = 80
+
+    # spec has shape [channel, n_mels, time], where channel is mono, stereo etc
+    spec = transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=hop_len, n_mels=n_mels)(sig)
+
+    # Convert to decibels
+    spec = transforms.AmplitudeToDB(top_db=top_db)(spec)
+    return (spec)
 - use STFT
 
 ## Didin't work
