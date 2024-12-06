@@ -25,10 +25,29 @@ def replaceRootPath(original_path, new_root):
     return transformed_path
 
 
+def augment(spectrogram):
+    # Apply augmentations with 50% probability each
+
+    # Time domain augmentations
+    if random.random() < 0.5:
+        for _ in range(3):
+            time_mask = T.TimeMasking(time_mask_param=int(spectrogram.shape[1] * 0.05))
+            spectrogram = time_mask(spectrogram)
+
+    # Frequency domain augmentations
+    if random.random() < 0.5:
+        for _ in range(3):
+            freq_mask = T.FrequencyMasking(freq_mask_param=3)
+            spectrogram = freq_mask(spectrogram)
+        
+    return spectrogram
+
+
 class AudioSpectrogramDataset(Dataset):
     def __init__(
             self, dataset_path, replaced_data_path_root=None, transform=None,
             input_normalize=None, sample_rate=192000, get_file_info=False,
+            augment=True,
         ):
         self.dataset = readJson(dataset_path)
         self.replaced_data_path_root = replaced_data_path_root
@@ -36,6 +55,7 @@ class AudioSpectrogramDataset(Dataset):
         self.input_normalize = input_normalize
         self.sample_rate = sample_rate
         self.get_file_info = get_file_info
+        self.augment = augment
 
     def __len__(self):
         return len(self.dataset)
@@ -81,6 +101,8 @@ class AudioSpectrogramDataset(Dataset):
         if self.input_normalize:
             spectrogram = self.input_normalize(spectrogram)
         #spectrogram[:] = occupancy
+        if self.augment:
+            spectrogram = augment(spectrogram)
         if self.get_file_info:
             return spectrogram, occupancy, file_info
         else:
