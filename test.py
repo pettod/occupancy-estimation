@@ -81,8 +81,9 @@ def predictResults():
 def loadModelAndConfig():
     config = import_module(os.path.join(
         MODEL_PATH, "codes.config").replace("/", ".")).CONFIG
-    model = config.MODELS[0].to(DEVICE)
+    model = config.MODELS[0]
     loadModel(model, model_path=MODEL_PATH, model_file_name=MODEL_FILE_NAME)
+    model = model.to(DEVICE)
     return model, config
 
 
