@@ -12,7 +12,7 @@ DATA_ROOT = "data_original"
 SAMPLE_LENGTH = 60.0
 TRAIN_VALID_SPLIT = 0.8
 PRINT_JSON = False
-USE_BUCKETS = True
+USE_BUCKETS = False
 BUCKETS = [0, 3, 7, 12, 19, 27, 38, 50]
 
 
