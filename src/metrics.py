@@ -21,3 +21,14 @@ def accuracy(y_pred, y_true):
     # Calculate the mean accuracy
     accuracy = ratio.mean().item()
     return accuracy
+
+
+def categoricalAccuracy(y_pred, y_true):
+    if len(y_pred.shape) == 2 and y_pred.shape[1] > 1:
+        y_pred = torch.argmax(y_pred, dim=1)
+    else:
+        y_pred = torch.round(y_pred)
+    y_pred[y_pred < 0] = 0
+    correct = (y_pred == y_true).sum().item()
+    total = y_true.size(0)
+    return correct / total
