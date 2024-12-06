@@ -12,6 +12,8 @@ DATA_ROOT = "data_original"
 SAMPLE_LENGTH = 60.0
 TRAIN_VALID_SPLIT = 0.8
 PRINT_JSON = False
+USE_BUCKETS = True
+BUCKETS = [0, 3, 7, 12, 19, 27, 38, 50]
 
 
 def convertToUnixSeconds(timestamp):
@@ -26,6 +28,16 @@ def audioLength(filepath):
     num_samples = waveform.size(1)
     duration_seconds = num_samples / sample_rate
     return duration_seconds
+
+
+def getBucket(occupancy):
+    try:
+        for i, bucket in enumerate(BUCKETS):
+            if occupancy <= bucket:
+                return i
+    except Exception as e:
+        raise ValueError(
+            f"Too high occupancy: {occupancy}, bucket max is {BUCKETS[-1]}")
 
 
 def getSamples(folder, sample_length=2.0):
@@ -62,6 +74,8 @@ def getSamples(folder, sample_length=2.0):
             ):
                 
                 occupancy = row["Count"]
+                if USE_BUCKETS:
+                    occupancy = getBucket(occupancy)
                 start_time = max(0.0, csv_start_timestamp - audio_file_start_time)
                 max_audio_file_occupancy_time = audio_file_length - start_time
                 if (occupancy_time is None or
@@ -80,13 +94,16 @@ def getSamples(folder, sample_length=2.0):
                             audio_file_start_time + start_time).strftime(
                             "%Y-%m-%d %H:%M:%S"),
                     }
+                    if USE_BUCKETS:
+                        single_sample["buckets"] = BUCKETS
                     samples.append(single_sample)
                     start_time += sample_length
     return samples
 
 
 def main():
-    json_filename = f"dataset_{str(SAMPLE_LENGTH).replace('.', '-')}s"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    json_filename = f"dataset_{str(SAMPLE_LENGTH).zfill(2).replace('.', '-')}s_{timestamp}"
     data_folders = glob(os.path.join(DATA_ROOT, "*/*/*/"))
     train_samples = []
     valid_samples = []
