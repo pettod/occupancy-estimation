@@ -9,11 +9,18 @@ import random
 
 
 DATA_ROOT = "data_original"
+NEW_DATA_ROOT = "data_high-pass"  # None
 SAMPLE_LENGTH = 60.0
 TRAIN_VALID_SPLIT = 0.8
 PRINT_JSON = False
 USE_BUCKETS = False
 BUCKETS = [0, 3, 7, 12, 19, 27, 38, 50]
+
+
+def replaceRootPath(original_path, new_root):
+    path_parts = original_path.split(os.sep)
+    transformed_path = os.path.join(new_root, *path_parts[1:])
+    return transformed_path
 
 
 def convertToUnixSeconds(timestamp):
@@ -58,6 +65,8 @@ def getSamples(folder, sample_length=2.0):
         audio_file_start_time = convertToUnixSeconds(audio_file_name[0:15])
         audio_file_length = audioLength(audio_file_path)
         audio_file_end_time = audio_file_start_time + audio_file_length
+        if NEW_DATA_ROOT:
+            audio_file_path = replaceRootPath(audio_file_path, NEW_DATA_ROOT)
 
         # Loop CSV file timestamps
         for csv_index, row in csv_info:
