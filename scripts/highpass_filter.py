@@ -17,8 +17,9 @@ DATA_DIR
 """
 
 INPUT_DATA_DIR = "data_original"
-OUTPUT_DATA_DIR = "data_high-pass"
 CUTOFF_FREQ = 10000
+ORDER = 15
+OUTPUT_DATA_DIR = f"data_high-pass_{CUTOFF_FREQ}Hz-cutoff_{ORDER}th-order"
 PLOT = False  # Super slow
 
 
@@ -103,10 +104,10 @@ def main():
 
             # Mono
             if data.ndim == 1:  # Mono
-                filtered_data = highpassFilter(data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)  # Example cutoff at 100 Hz
+                filtered_data = highpassFilter(data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate, order=ORDER)  # Example cutoff at 100 Hz
             # Stereo
             else:
-                filtered_data = np.apply_along_axis(highpassFilter, 0, data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate)
+                filtered_data = np.apply_along_axis(highpassFilter, 0, data, cutoff_freq=CUTOFF_FREQ, sample_rate=sample_rate, order=ORDER)
 
             # Create a time axis for plotting (based on the sample rate and number of samples)
             time = np.arange(data.shape[0]) / sample_rate
