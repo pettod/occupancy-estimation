@@ -1,4 +1,4 @@
-# Occupancy estimation
+# Count estimation
 
 ## Introduction
 

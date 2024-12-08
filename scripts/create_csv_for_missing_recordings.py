@@ -3,8 +3,8 @@ from datetime import datetime
 import os
 
 
-WAV_FILE_PATH = "/Users/todorov/Documents/ef/occupancy-ml/20241016_155159.WAV"
-OCCUPANCY = WAV_FILE_PATH.split("/")[-2].split("_")[0]
+WAV_FILE_PATH = "/Users/todorov/Documents/ef/count-ml/20241016_155159.WAV"
+COUNT = WAV_FILE_PATH.split("/")[-2].split("_")[0]
 
 
 def extractAndFormatTimestamp(filename):
@@ -22,7 +22,7 @@ def writeToCsv(wav_filename):
     formatted_time, unix_seconds = extractAndFormatTimestamp(wav_filename)
     data_to_add = [
         ["Time", "Seconds", "Seconds-from-start", "Count"],
-        [formatted_time, f"{unix_seconds:.2f}", 0.0, OCCUPANCY]
+        [formatted_time, f"{unix_seconds:.2f}", 0.0, COUNT]
     ]
     with open(csv_filename, mode="w", newline="") as file:
         writer = csv.writer(file)

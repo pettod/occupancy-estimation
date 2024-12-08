@@ -15,7 +15,7 @@ n_mels = 64
 freq_mask_param = 10
 time_mask_param = 6000
 audio_waveform, sample_rate = torchaudio.load(
-    "/Users/todorov/Documents/ef/occupancy-estimation/data_high-pass/Audiomoth_10430017/20241119/Office_0_64_Tuesday/20241119_101552.WAV",
+    "/Users/todorov/Documents/ef/count-estimation/data_high-pass/Audiomoth_10430017/20241119/Office_0_64_Tuesday/20241119_101552.WAV",
     frame_offset=frame_offset,
     num_frames=num_frames,
 )

@@ -12,8 +12,13 @@ FILTERED_DATA_PATH = None  #"data_original/Audiomoth_10488200"
 
 
 def readJson(json_path):
-    with open(json_path, "r") as f:
-        data = json.load(f)
+    # Use try except to avoid breaking the program when testing and importing config
+    data = []
+    try:
+        with open(json_path, "r") as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"Error reading JSON file {json_path}: {e}")
     if FILTERED_DATA_PATH:
         data = [d for d in data if FILTERED_DATA_PATH in d["audio_file_path"]]
     return data
@@ -63,7 +68,7 @@ class AudioSpectrogramDataset(Dataset):
         audio_file_path = self.dataset[i]["audio_file_path"]
         start_time = self.dataset[i]["start_time"]
         end_time = self.dataset[i]["end_time"]
-        occupancy = torch.tensor(int(self.dataset[i]["occupancy"]), dtype=torch.float32)
+        count = torch.tensor(int(self.dataset[i]["count"]), dtype=torch.float32)
         file_info = {
             "audio_file_path": audio_file_path,
             "start_time": start_time,
@@ -98,22 +103,22 @@ class AudioSpectrogramDataset(Dataset):
         spectrogram = self.transform(audio_waveform)
         if self.input_normalize:
             spectrogram = self.input_normalize(spectrogram)
-        #spectrogram[:] = occupancy
+        #spectrogram[:] = count
         if self.augment:
             spectrogram = augment(spectrogram)
         if self.get_file_info:
-            return spectrogram, occupancy, file_info
+            return spectrogram, count, file_info
         else:
-            return spectrogram, occupancy
+            return spectrogram, count
 
 
 if __name__ == "__main__":
     dataset_file_path = "dataset_2-0s.json"
     dataset = AudioSpectrogramDataset(dataset_file_path)
     # https://en.wikipedia.org/wiki/Mel_scale
-    spectrogram, occupancy = dataset[0]
+    spectrogram, count = dataset[0]
     print(spectrogram.shape)  # (number_of_mels, time_steps)
-    print(occupancy, "people")
+    print(count, "people")
 
     plt.imshow(spectrogram.log2()[0, :, :].numpy(), cmap="viridis")
     plt.show()

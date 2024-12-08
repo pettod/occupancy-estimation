@@ -22,8 +22,8 @@ MODEL_PATH = "saved_models/2024-11-20_110334_60s-window_1500-samples"
 AUDIO_CHANNELS = 1              # Mono
 CUTOFF = 10000
 INTERVAL = 30
-OCCUPANCY_HISTORY_SAMPLES = 100
-OCCUPANCY_SMOOTHENED_SAMPLES = 10  # Min 1
+COUNT_HISTORY_SAMPLES = 100
+COUNT_SMOOTHENED_SAMPLES = 10  # Min 1
 SMOOTH_FFT = False
 
 
@@ -77,13 +77,13 @@ class MicrophonePlot:
         )
         self.model = model
         self.is_paused = False
-        self.occupancy_history_samples = deque(maxlen=OCCUPANCY_SMOOTHENED_SAMPLES)
-        self.occupancy_history_smoothened_samples = deque(maxlen=OCCUPANCY_HISTORY_SAMPLES)
-        for i in range(OCCUPANCY_SMOOTHENED_SAMPLES): self.occupancy_history_samples.append(0)
-        for i in range(OCCUPANCY_HISTORY_SAMPLES): self.occupancy_history_smoothened_samples.append(0)
+        self.count_history_samples = deque(maxlen=COUNT_SMOOTHENED_SAMPLES)
+        self.count_history_smoothened_samples = deque(maxlen=COUNT_HISTORY_SAMPLES)
+        for i in range(COUNT_SMOOTHENED_SAMPLES): self.count_history_samples.append(0)
+        for i in range(COUNT_HISTORY_SAMPLES): self.count_history_smoothened_samples.append(0)
         self.setFigures()
 
-    def predictOccupancy(self, audio_clip):
+    def predictCount(self, audio_clip):
         if self.model:
             prediction = self.model(audio_clip)
         else:
@@ -118,15 +118,15 @@ class MicrophonePlot:
         self.plot_frequency_data, = self.ax2.plot(self.x_freq, np.zeros(AUDIO_BUFFER//2))
 
         # ax3 plot
-        self.ax3.set_title("Occupancy")
+        self.ax3.set_title("Count")
         self.ax3.axis("off")
-        self.plot_occupancy_count = self.ax3.text(0.5, 0.5, "", fontsize=170, ha="center", va="center")
+        self.plot_count_count = self.ax3.text(0.5, 0.5, "", fontsize=170, ha="center", va="center")
 
         # ax4 plot
-        self.ax4.set_title("Occupancy History")
+        self.ax4.set_title("Count History")
         self.ax4.set_xlabel("Sample")
-        self.ax4.set_ylabel("Occupancy")
-        self.occupancy_history, = self.ax4.plot(self.occupancy_history_smoothened_samples)
+        self.ax4.set_ylabel("Count")
+        self.count_history, = self.ax4.plot(self.count_history_smoothened_samples)
         self.ax4.set_ylim(0, 51)
 
     def update_plots(self, frame):
@@ -141,14 +141,14 @@ class MicrophonePlot:
             fft_data = moving_average(fft_data, window_size=9)
         self.plot_frequency_data.set_ydata(fft_data)
         
-        # Occupancy
-        occupancy_count = self.predictOccupancy(data)
-        self.plot_occupancy_count.set_text(occupancy_count)
-        self.occupancy_history_samples.append(occupancy_count)
-        self.occupancy_history_smoothened_samples.append(round(np.mean(self.occupancy_history_samples)))
-        self.occupancy_history.set_ydata(self.occupancy_history_smoothened_samples)
+        # Count
+        count_count = self.predictCount(data)
+        self.plot_count_count.set_text(count_count)
+        self.count_history_samples.append(count_count)
+        self.count_history_smoothened_samples.append(round(np.mean(self.count_history_samples)))
+        self.count_history.set_ydata(self.count_history_smoothened_samples)
         
-        return self.plot_time_data, self.plot_frequency_data, self.plot_occupancy_count, self.occupancy_history
+        return self.plot_time_data, self.plot_frequency_data, self.plot_count_count, self.count_history
 
     def pauseAnimation(self, event):
         if event.key == " ":  # Check if the space bar was pressed

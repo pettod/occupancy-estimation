@@ -18,7 +18,7 @@ TRAIN_DATASET = Dataset(
 
 def main():
     samples = []
-    for spectrogram, occupancy in tqdm(TRAIN_DATASET):
+    for spectrogram, count in tqdm(TRAIN_DATASET):
         samples.append(spectrogram)
     samples = torch.stack(samples)
     std = torch.std(samples)

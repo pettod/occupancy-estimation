@@ -16,7 +16,7 @@ from src.utils.utils import loadModel
 
 
 # Data paths
-DATA_FILENAME = "dataset_60-0s_train.json"
+DATA_FILENAME = "dataset_60-0s_20241208_154505_train.json"
 REPLACED_DATA_PATH_ROOT = "data_high-pass"
 
 # Model parameters
@@ -65,7 +65,7 @@ def predictResults():
                     gt_pred[gt] = [pred]
                 pred_accuracy = accuracy(pred, gt)
                 if pred_accuracy < PRINT_AUDIO_THRESHOLD:
-                    print("\nOccupancy: ", gt)
+                    print("\nCount: ", gt)
                     print("Prediction:", pred)
                     print("Accuracy:   {}%".format(round(100 * pred_accuracy, 1)))
                     print("Original file path: ", file_info["audio_file_path"][i])
@@ -116,15 +116,15 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
         sharex=True,
     )
     plt.subplots_adjust(wspace=0, hspace=0)
-    gt_occupancies = sorted(gt_pred.keys())
-    number_of_occupancies = [len(gt_pred[gt]) for gt in gt_occupancies]
+    gt_counts = sorted(gt_pred.keys())
+    number_of_counts = [len(gt_pred[gt]) for gt in gt_counts]
 
     # Plot precition accuracy candle chart
-    pred_occupancies =[]
-    for i, key in enumerate(gt_occupancies):
+    pred_counts =[]
+    for i, key in enumerate(gt_counts):
         values = gt_pred[key]
         mean = np.mean(values)
-        pred_occupancies.append(mean)
+        pred_counts.append(mean)
         std = np.std(values)
         min_value = min(values)
         max_value = max(values)
@@ -134,15 +134,15 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
         ax[0].plot(i, max_value, "_", color="black", markersize=marker_width)
         ax[0].plot(i, min_value, "_", color="black", markersize=marker_width)
         ax[0].plot(i, mean, "x", color="red", markersize=marker_width, label="Prediction mean" if i == 0 else "")
-    ax[0].plot(range(len(gt_occupancies)), gt_occupancies, color="blue", alpha=alpha)
-    ax[0].plot(range(len(gt_occupancies)), pred_occupancies, color="red", alpha=alpha)
+    ax[0].plot(range(len(gt_counts)), gt_counts, color="blue", alpha=alpha)
+    ax[0].plot(range(len(gt_counts)), pred_counts, color="red", alpha=alpha)
 
     # Plot number of samples histogram
-    bins = range(len(number_of_occupancies))
-    ax[1].bar(bins, number_of_occupancies, edgecolor="black", align="center", width=1.0)
+    bins = range(len(number_of_counts))
+    ax[1].bar(bins, number_of_counts, edgecolor="black", align="center", width=1.0)
 
     # Add text on top of bins
-    for x, value in zip(bins, number_of_occupancies):
+    for x, value in zip(bins, number_of_counts):
         ax[1].text(
             x,
             value, str(int(value)),
@@ -152,19 +152,19 @@ def candleChart(gt_pred, marker_width=8, alpha=0.5):
     # Plot style
     pred_accuracy, pred_absolute_std, pred_relative_std = accuracyAndStdDataset(gt_pred)
     ax[0].set_title(
-        f"Occupancy Prediction\n"
+        f"Count Prediction\n"
         f"$\mathbf{{Accuracy:}}$ {round(100 * pred_accuracy, 1)}%, "
         f"$\mathbf{{Absolute\ STD:}}$ {round(pred_absolute_std, 1)} people, "
         f"$\mathbf{{Relative\ STD:}}$ {round(100 * pred_relative_std, 1)}%",
         loc="center",
     )
-    ax[0].set_ylabel("Predicted occupancy")
+    ax[0].set_ylabel("Predicted count")
     ax[0].set_ylim(0)
-    plt.xticks(ticks=range(len(gt_occupancies)), labels=gt_occupancies)
+    plt.xticks(ticks=range(len(gt_counts)), labels=gt_counts)
     ax[0].legend()
     ax[0].grid(True, linestyle="--", alpha=0.5)
-    ax[1].set_ylim(0, max(number_of_occupancies) * 1.2)
-    ax[1].set_xlabel("Ground truth occupancy")
+    ax[1].set_ylim(0, max(number_of_counts) * 1.2)
+    ax[1].set_xlabel("Ground truth count")
     ax[1].set_ylabel("Samples")
     if PLOT_RESULT:
         plt.show()    
@@ -179,9 +179,9 @@ def getExampleData():
         number_of_samples = 20 + np.random.randint(20, size=1)[0]
         low_value = np.random.randint(-10, -1)
         high_value = np.random.randint(1, 10)
-        predicted_occupancies = np.array(gt) + np.random.randint(low_value, high_value, size=number_of_samples)
-        predicted_occupancies[predicted_occupancies < 0] = 0
-        gt_pred[gt] = list(predicted_occupancies)
+        predicted_counts = np.array(gt) + np.random.randint(low_value, high_value, size=number_of_samples)
+        predicted_counts[predicted_counts < 0] = 0
+        gt_pred[gt] = list(predicted_counts)
     return gt_pred
 
 

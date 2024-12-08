@@ -37,14 +37,14 @@ def audioLength(filepath):
     return duration_seconds
 
 
-def getBucket(occupancy):
+def getBucket(count):
     try:
         for i, bucket in enumerate(BUCKETS):
-            if occupancy <= bucket:
+            if count <= bucket:
                 return i
     except Exception as e:
         raise ValueError(
-            f"Too high occupancy: {occupancy}, bucket max is {BUCKETS[-1]}")
+            f"Too high count: {count}, bucket max is {BUCKETS[-1]}")
 
 
 def getSamples(folder, sample_length=2.0):
@@ -71,32 +71,32 @@ def getSamples(folder, sample_length=2.0):
         # Loop CSV file timestamps
         for csv_index, row in csv_info:
             csv_start_timestamp = row["Seconds"]
-            occupancy_time = 365*24*3600  # Big initial value
+            count_time = 365*24*3600  # Big initial value
             if csv_index < len(csv_info) - 1:
                 next_row = csv_info[csv_index + 1][1]
-                occupancy_time = next_row["Seconds"] - csv_start_timestamp
-            csv_end_timestamp = csv_start_timestamp + occupancy_time
+                count_time = next_row["Seconds"] - csv_start_timestamp
+            csv_end_timestamp = csv_start_timestamp + count_time
 
             # Timestamp in audio file
             if (csv_end_timestamp >= audio_file_start_time and
                 csv_start_timestamp <= audio_file_end_time - sample_length
             ):
                 
-                occupancy = row["Count"]
+                count = row["Count"]
                 if USE_BUCKETS:
-                    occupancy = getBucket(occupancy)
+                    count = getBucket(count)
                 start_time = max(0.0, csv_start_timestamp - audio_file_start_time)
-                max_audio_file_occupancy_time = audio_file_length - start_time
-                if (occupancy_time is None or
-                    occupancy_time > max_audio_file_occupancy_time
+                max_audio_file_count_time = audio_file_length - start_time
+                if (count_time is None or
+                    count_time > max_audio_file_count_time
                 ):
-                    occupancy_time = max_audio_file_occupancy_time
-                occupancy_end_time = occupancy_time + start_time
-                while start_time + sample_length <= occupancy_end_time:
+                    count_time = max_audio_file_count_time
+                count_end_time = count_time + start_time
+                while start_time + sample_length <= count_end_time:
                     end_time = start_time + sample_length
                     single_sample = {
                         "audio_file_path": audio_file_path,
-                        "occupancy": occupancy,
+                        "count": count,
                         "start_time": start_time,
                         "end_time": end_time,
                         "start_timestamp": datetime.fromtimestamp(

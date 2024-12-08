@@ -22,8 +22,8 @@ def main():
     train_file = sys.argv[1]
     with open(train_file, "r") as f:
         train_data = json.load(f)
-    occupancies = np.array([x["occupancy"] for x in train_data])
-    best_occupancy = None
+    counts = np.array([x["count"] for x in train_data])
+    best_count = None
     best_accuracy = 0
     best_mae = float("inf")
     best_mse = float("inf")
@@ -31,22 +31,22 @@ def main():
         pred_accuracy = 0
         pred_mae = 0
         pred_mse = 0
-        for gt in occupancies:
+        for gt in counts:
             pred_accuracy += accuracy(pred, gt)
             pred_mae += mae(pred, gt)
             pred_mse += mse(pred, gt)
-        pred_accuracy /= len(occupancies)
-        pred_mae /= len(occupancies)
-        pred_mse /= len(occupancies)
+        pred_accuracy /= len(counts)
+        pred_mae /= len(counts)
+        pred_mse /= len(counts)
         if pred_accuracy > best_accuracy:
             best_accuracy = pred_accuracy
             best_mae = pred_mae
             best_mse = pred_mse
-            best_occupancy = pred
+            best_count = pred
     print("Best accuracy: {}%".format(round(100 * best_accuracy, 2)))
     print("Best MAE: {}".format(round(best_mae, 2)))
     print("Best MSE: {}".format(round(best_mse, 2)))
-    print("Best occupancy: {}".format(best_occupancy))
+    print("Best count: {}".format(best_count))
 
 
 

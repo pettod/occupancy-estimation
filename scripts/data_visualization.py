@@ -72,7 +72,7 @@ if __name__ == "__main__":
         y.extend(values)
     plt.scatter(x, y, color="blue", alpha=alpha)
     plt.title("Mean of input")
-    plt.xlabel("Occupancy")
+    plt.xlabel("Count")
     plt.ylabel("Mean")
     plt.xticks(x)
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         y.extend(values)
     plt.scatter(x, y, color="blue", alpha=alpha)
     plt.title("STD of input")
-    plt.xlabel("Occupancy")
+    plt.xlabel("Count")
     plt.ylabel("STD")
     plt.xticks(x)
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         y.extend(values)
     plt.scatter(x, y, color="blue", alpha=alpha)
     plt.title("Relative values")
-    plt.xlabel("Occupancy")
+    plt.xlabel("Count")
     plt.ylabel("Mean / STD")
     plt.xticks(x)
 

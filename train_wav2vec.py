@@ -35,7 +35,7 @@ class JsonAudioDataset(Dataset):
         audio_path = entry["audio_file_path"]
         start_time = entry["start_time"]
         end_time = entry["end_time"]
-        label = entry["occupancy"]
+        label = entry["count"]
         if self.replace_root_path:
             audio_path = self.replaceRootPath(audio_path, self.replace_root_path)
 
@@ -105,7 +105,7 @@ val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False, num_workers=nu
 # Load pre-trained Wav2Vec2 for regression
 model = Wav2Vec2ForSequenceClassification.from_pretrained(
     "facebook/wav2vec2-base",
-    num_labels=1,  # Regression task (1 output for predicting occupancy)
+    num_labels=1,  # Regression task (1 output for predicting count)
     problem_type="regression",
 )
 
@@ -126,7 +126,7 @@ def train(model, loader):
         inputs, labels = inputs.to(device), labels.to(device)
 
         # Forward pass
-        outputs = model(inputs).logits.squeeze(1)  # Predicted occupancy
+        outputs = model(inputs).logits.squeeze(1)  # Predicted count
         loss = criterion(outputs, labels)
 
         # Backward pass
